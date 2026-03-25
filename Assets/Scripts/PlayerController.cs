@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 public class Player : MonoBehaviour
 {
 	[SerializeField]
-	private float moveSpeed = 10f;
+    private float moveSpeed = 10f;
 
 	[SerializeField]
 	private float friction = 1f;
@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
 
 	private Vector3 velocity = new Vector3(0, 0, 0);
 
-	private InputAction moveAction;
+    private InputAction moveAction;
 	private InputAction lookAction;
 	private InputAction jumpAction;
 
@@ -70,7 +70,7 @@ public class Player : MonoBehaviour
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
-	{
+    {
 		moveAction = InputSystem.actions.FindAction("Move");
 		lookAction = InputSystem.actions.FindAction("Look");
 		jumpAction = InputSystem.actions.FindAction("Jump");
@@ -99,7 +99,7 @@ public class Player : MonoBehaviour
 		// Flat motion
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
-		rb.AddForce(new Vector3(moveDirection.x, 0, moveDirection.z) * moveSpeed * Time.deltaTime);
+		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * moveSpeed * Time.deltaTime;
 
 		// Ground check
 		if (groundedCooldown > 0)
@@ -120,13 +120,13 @@ public class Player : MonoBehaviour
 		if (jumpAction.WasPressedThisFrame()) jumpBufferTime = jumpBufferDuration;
 		else if (jumpBufferTime > 0) jumpBufferTime -= Time.deltaTime;
 
-		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
-
+		//Debug.Log(jumpBufferTime + ", " + grounded);
 		if (jumpAction.IsPressed())
 		{
-			if ( jumpTimeRemaining <= 0)//jumpBufferTime > 0 && coyoteTime > 0 &&
+			if (jumpBufferTime > 0 && coyoteTime > 0)
 			{
-				rb.AddForce(Vector3.up * minJumpStrength);
+				if (velocity.y < 0) velocity.y = 0;
+				velocity.y += minJumpStrength;
 				jumpTimeRemaining = maxJumpTime;
 
 				groundedCooldown = groundedCooldownDuration;
@@ -137,7 +137,7 @@ public class Player : MonoBehaviour
 			else if (jumpTimeRemaining > 0)
 			{
 				jumpTimeRemaining -= Time.deltaTime;
-				rb.AddForce(Vector3.up * addtionalJumpStrength * (jumpTimeRemaining / maxJumpTime) * Time.deltaTime);
+				velocity.y += addtionalJumpStrength * (jumpTimeRemaining / maxJumpTime) * Time.deltaTime;
 			}
 		}
 		else
@@ -145,8 +145,16 @@ public class Player : MonoBehaviour
 			jumpTimeRemaining = 0;
 		}
 
-		// Friction
-		Vector3 force = rb.GetAccumulatedForce();
-		rb.AddForce(force / (1 + friction * Time.deltaTime) - force);
+		// Final movement logic
+		rb.position += velocity * Time.deltaTime;
+
+		float frameFriction = 1 + friction * Time.deltaTime;
+		velocity.x /= frameFriction;
+		velocity.z /= frameFriction;
+
+		if (grounded && velocity.y < 0) velocity.y = -0.5f;
+		else velocity.y -= gravity * Time.deltaTime;
+
+		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
 	}
 }

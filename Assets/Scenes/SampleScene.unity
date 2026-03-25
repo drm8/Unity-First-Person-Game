@@ -724,12 +724,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 463cc9e2c6277dc44a19e33d9f0c3a47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  moveSpeed: 1200
+  moveSpeed: 75
   friction: 10
   lookLimitV: 70
   lookSensitivity: 0.2
-  minJumpStrength: 150
-  addtionalJumpStrength: 1000
+  minJumpStrength: 7.5
+  addtionalJumpStrength: 40
   maxJumpTime: 0.3
   gravity: 30
   groundedRadius: 0.35
