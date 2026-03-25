@@ -1,3 +1,4 @@
+using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -5,7 +6,7 @@ using UnityEngine.UIElements;
 public class Player : MonoBehaviour
 {
 	[SerializeField]
-    private float moveSpeed = 10f;
+	private float moveSpeed = 10f;
 
 	[SerializeField]
 	private float friction = 1f;
@@ -51,11 +52,13 @@ public class Player : MonoBehaviour
 
 	private Vector3 velocity = new Vector3(0, 0, 0);
 
-    private InputAction moveAction;
+	private InputAction moveAction;
 	private InputAction lookAction;
 	private InputAction jumpAction;
 
 	private Camera cam;
+
+	private PlayerCamera camScript;
 
 	private Rigidbody rb;
 
@@ -70,13 +73,14 @@ public class Player : MonoBehaviour
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
-    {
+	{
 		moveAction = InputSystem.actions.FindAction("Move");
 		lookAction = InputSystem.actions.FindAction("Look");
 		jumpAction = InputSystem.actions.FindAction("Jump");
 
 		cam = GetComponentInChildren<Camera>();
 		rb = GetComponent<Rigidbody>();
+		camScript = GetComponentInChildren<PlayerCamera>();
 
 		coyoteTime = coyoteDuration;
 		jumpBufferTime = jumpBufferDuration;
@@ -108,9 +112,14 @@ public class Player : MonoBehaviour
 		}
 		else
 		{
+			bool preGrounded = grounded;
 			RaycastHit hit; // I don't know how to call SphereCast with a maxDistance without a hitInfo param.
 			grounded = Physics.SphereCast(transform.position, groundedRadius, -transform.up, out hit, groundCheckDistance);
-			Debug.Log(hit.distance);
+
+			if (grounded && !preGrounded)
+			{
+				camScript.Dip(-velocity.y);
+			}
 		}
 
 		// Jumping
@@ -120,7 +129,6 @@ public class Player : MonoBehaviour
 		if (jumpAction.WasPressedThisFrame()) jumpBufferTime = jumpBufferDuration;
 		else if (jumpBufferTime > 0) jumpBufferTime -= Time.deltaTime;
 
-		//Debug.Log(jumpBufferTime + ", " + grounded);
 		if (jumpAction.IsPressed())
 		{
 			if (jumpBufferTime > 0 && coyoteTime > 0)
