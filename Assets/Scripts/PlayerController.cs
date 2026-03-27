@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-public class Player : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
 	[SerializeField]
 	private float moveSpeed = 10f;
@@ -164,5 +164,15 @@ public class Player : MonoBehaviour
 		else velocity.y -= gravity * Time.deltaTime;
 
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
+	}
+
+	public void AddForce(Vector3 force)
+	{
+		velocity += force;
+	}
+
+	public Vector3 GetVelocity()
+	{
+		return velocity;
 	}
 }
