@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-    [SerializeField]
-    private float dipBaseStrength = 0.25f;
+	[SerializeField]
+	private float dipAccel = 2;
 
     [SerializeField]
-	private float dipSpeed = 3;
+	private float dipDrag = 10;
 
-    private float dipCurrentStrength;
-	private float dipDelta = -1;
-    
+	[SerializeField]
+    private float dipEndTolerance = -0.05f;
+
+    private float dipVel = 0;
+    private bool dipActive = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -21,23 +23,24 @@ public class PlayerCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (dipDelta != -1)
+        if (dipActive)
         {
-            dipDelta += Time.deltaTime * dipSpeed;
+            dipVel += dipAccel * Time.deltaTime;
+            dipVel /= 1 + dipDrag * Time.deltaTime;
+			transform.localPosition = new Vector3(0, transform.localPosition.y + dipVel * Time.deltaTime, 0);
 
-            if (dipDelta >= 1)
+            if (transform.localPosition.y > dipEndTolerance && dipVel > 0)
             {
-				dipDelta = -1;
-                transform.localPosition = new Vector3(0, 0, 0);
+				transform.localPosition = new Vector3(0, 0, 0);
+                dipActive = false;
+				dipVel = 0;
 			}
-
-			transform.localPosition = new Vector3(0, -Mathf.Sin(dipDelta * Mathf.PI) * dipCurrentStrength, 0);
-        }
+		}
     }
 
-    public void Dip(float strength)
+    public void Dip(float velocity)
     {
-        dipDelta = 0;
-        dipCurrentStrength = strength * dipBaseStrength;
+        dipVel = velocity;
+        dipActive = true;
 	}
 }

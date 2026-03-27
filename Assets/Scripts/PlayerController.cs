@@ -118,7 +118,7 @@ public class Player : MonoBehaviour
 
 			if (grounded && !preGrounded)
 			{
-				camScript.Dip(-velocity.y);
+				camScript.Dip(velocity.y);
 			}
 		}
 
