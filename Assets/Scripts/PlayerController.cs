@@ -1,4 +1,3 @@
-using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -55,6 +54,10 @@ public class PlayerController : MonoBehaviour
 	private InputAction moveAction;
 	private InputAction lookAction;
 	private InputAction jumpAction;
+	private InputAction attackAction;
+
+	[SerializeField]
+	float shootDistance = 500;
 
 	private Camera cam;
 
@@ -77,6 +80,7 @@ public class PlayerController : MonoBehaviour
 		moveAction = InputSystem.actions.FindAction("Move");
 		lookAction = InputSystem.actions.FindAction("Look");
 		jumpAction = InputSystem.actions.FindAction("Jump");
+		attackAction = InputSystem.actions.FindAction("Attack");
 
 		cam = GetComponentInChildren<Camera>();
 		rb = GetComponent<Rigidbody>();
@@ -93,8 +97,9 @@ public class PlayerController : MonoBehaviour
 		Vector2 lookDirection = lookAction.ReadValue<Vector2>();
 		float currentRotation = cam.transform.rotation.eulerAngles.x;
 		float newX = currentRotation - lookDirection.y * lookSensitivity;
-		if (currentRotation < lookLimitV && newX > lookLimitV) newX = lookLimitV;
-		if (currentRotation > 360 - lookLimitV && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
+		Debug.Log(newX + ", " + currentRotation + ", " + (newX > lookLimitV));
+		if (currentRotation <= 90 && newX > lookLimitV) newX = lookLimitV;
+		if (currentRotation >= 180 && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
 		cam.transform.localRotation = Quaternion.Euler(new Vector3(newX, 0, 0));
 
 		float newY = transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
@@ -164,6 +169,20 @@ public class PlayerController : MonoBehaviour
 		else velocity.y -= gravity * Time.deltaTime;
 
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
+
+		// Shoot
+		if (attackAction.WasPressedThisFrame())
+		{
+			RaycastHit hit;
+			bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
+			if (hasHit)
+			{
+				if (hit.collider.CompareTag("Hitable"))
+				{
+					hit.collider.GetComponentInParent<Hitable>().Hit();
+				}
+			}	
+		}
 	}
 
 	public void AddForce(Vector3 force)
