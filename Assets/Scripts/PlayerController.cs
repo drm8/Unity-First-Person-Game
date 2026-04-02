@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -59,6 +60,11 @@ public class PlayerController : MonoBehaviour
 	[SerializeField]
 	float shootDistance = 500;
 
+	[SerializeField]
+	float aimAssistPerMeter = 0.05f;
+
+	EnemyManager enemies;
+
 	private Camera cam;
 
 	private PlayerCamera camScript;
@@ -77,39 +83,68 @@ public class PlayerController : MonoBehaviour
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
 	{
+		coyoteTime = coyoteDuration;
+		jumpBufferTime = jumpBufferDuration;
+
 		moveAction = InputSystem.actions.FindAction("Move");
 		lookAction = InputSystem.actions.FindAction("Look");
 		jumpAction = InputSystem.actions.FindAction("Jump");
 		attackAction = InputSystem.actions.FindAction("Attack");
 
+		enemies = FindObjectsByType<EnemyManager>(FindObjectsSortMode.InstanceID)[0];
+
 		cam = GetComponentInChildren<Camera>();
 		rb = GetComponent<Rigidbody>();
 		camScript = GetComponentInChildren<PlayerCamera>();
-
-		coyoteTime = coyoteDuration;
-		jumpBufferTime = jumpBufferDuration;
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
-		// Rotation
+		// Movement
+		Rotate();
+		FlatMotion();
+		Jump();
+		MovementWrapup();
+
+		// Misc
+		Shoot();
+	}
+
+	public void AddForce(Vector3 force)
+	{
+		velocity += force;
+	}
+
+	public Vector3 GetVelocity()
+	{
+		return velocity;
+	}
+
+	private void Rotate()
+	{
+		// Camera rotation (up and down)
 		Vector2 lookDirection = lookAction.ReadValue<Vector2>();
 		float currentRotation = cam.transform.rotation.eulerAngles.x;
 		float newX = currentRotation - lookDirection.y * lookSensitivity;
-		Debug.Log(newX + ", " + currentRotation + ", " + (newX > lookLimitV));
 		if (currentRotation <= 90 && newX > lookLimitV) newX = lookLimitV;
 		if (currentRotation >= 180 && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
 		cam.transform.localRotation = Quaternion.Euler(new Vector3(newX, 0, 0));
 
+		// Player rotation (left and right)
 		float newY = transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
 		transform.rotation = Quaternion.Euler(new Vector3(0, newY, 0));
+	}
 
-		// Flat motion
+	private void FlatMotion()
+	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * moveSpeed * Time.deltaTime;
+	}
 
+	private void Jump()
+	{
 		// Ground check
 		if (groundedCooldown > 0)
 		{
@@ -157,8 +192,10 @@ public class PlayerController : MonoBehaviour
 		{
 			jumpTimeRemaining = 0;
 		}
+	}
 
-		// Final movement logic
+	private void MovementWrapup()
+	{
 		rb.position += velocity * Time.deltaTime;
 
 		float frameFriction = 1 + friction * Time.deltaTime;
@@ -169,29 +206,37 @@ public class PlayerController : MonoBehaviour
 		else velocity.y -= gravity * Time.deltaTime;
 
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
+	}
 
-		// Shoot
-		if (attackAction.WasPressedThisFrame())
+	private void Shoot()
+	{
+		if (attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
 		{
-			RaycastHit hit;
-			bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
-			if (hasHit)
+			Vector3 direction = cam.transform.forward;
+			foreach (Transform enemy in enemies.GetEnemyList())
 			{
-				if (hit.collider.CompareTag("Hitable"))
-				{
-					hit.collider.GetComponentInParent<Hitable>().Hit();
-				}
-			}	
+				Vector3 positionDifference = enemy.position - transform.position;
+				float distance = positionDifference.magnitude;
+
+				// Is the enemy close enough?
+				if (distance > shootDistance) continue;
+
+				Debug.Log(Vector3.Distance(positionDifference, Vector3.Project(positionDifference, direction)));
+
+				if (Vector3.Distance(positionDifference, Vector3.Project(positionDifference, direction)) > 0.75 + distance * aimAssistPerMeter) continue;
+
+				enemy.GetComponentInParent<Hitable>().Hit();
+
+				//RaycastHit hit;
+				//bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
+				//if (hasHit)
+				//{
+				//	if (hit.collider.CompareTag("Hitable"))
+				//	{
+				//		hit.collider.GetComponentInParent<Hitable>().Hit();
+				//	}
+				//}
+			}
 		}
-	}
-
-	public void AddForce(Vector3 force)
-	{
-		velocity += force;
-	}
-
-	public Vector3 GetVelocity()
-	{
-		return velocity;
 	}
 }
