@@ -2346,6 +2346,9 @@ MonoBehaviour:
   groundCheckDistance: 0.65
   groundedCooldownDuration: 0.1
   coyoteDuration: 0.2
+  jumpSpeedBoost: 0
+  bounceWindow: 0.1
+  bounceSpeedMultiplier: 0
   jumpBufferDuration: 0.1
   shootDistance: 500
   aimAssistPerMeter: 0.03

@@ -48,6 +48,15 @@ public class PlayerController : MonoBehaviour
 	private float coyoteTime;
 
 	[SerializeField]
+	private float jumpSpeedBoost = 10f; // Speed boost when jumping
+	[SerializeField]
+	private float bounceWindow = 0.1f; // The window of time after hitting the ground for the player to bounce
+	[SerializeField]
+	private float bounceSpeedMultiplier = 0.75f; // Speed boost proportional to velocity.y when jumping right after landing
+	private float timeSinceLanded;
+	private float previousFallSpeed = 0;
+
+	[SerializeField]
 	private float jumpBufferDuration = 0.1f;
 	private float jumpBufferTime;
 
@@ -90,6 +99,7 @@ public class PlayerController : MonoBehaviour
 	void Start()
 	{
 		coyoteTime = coyoteDuration;
+		timeSinceLanded = bounceWindow;
 		jumpBufferTime = jumpBufferDuration;
 
 		moveAction = InputSystem.actions.FindAction("Move");
@@ -144,9 +154,14 @@ public class PlayerController : MonoBehaviour
 
 	private void FlatMotion()
 	{
+		MoveBySpeed(moveSpeed * Time.deltaTime);
+	}
+
+	private void MoveBySpeed(float speed)
+	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
-		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * moveSpeed * Time.deltaTime;
+		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
 
 	private void Jump()
@@ -165,6 +180,8 @@ public class PlayerController : MonoBehaviour
 			if (grounded && !preGrounded)
 			{
 				camScript.Dip(velocity.y);
+				previousFallSpeed = Mathf.Abs(velocity.y);
+				timeSinceLanded = 0;
 			}
 		}
 
@@ -179,10 +196,16 @@ public class PlayerController : MonoBehaviour
 		{
 			if (jumpBufferTime > 0 && coyoteTime > 0)
 			{
+				// Y velocity
 				if (velocity.y < 0) velocity.y = 0;
 				velocity.y += minJumpStrength;
-				jumpTimeRemaining = maxJumpTime;
 
+				// XZ velocity
+				MoveBySpeed(jumpSpeedBoost);
+				if (timeSinceLanded < bounceWindow) MoveBySpeed(previousFallSpeed * bounceSpeedMultiplier);
+
+				// Everything else or something
+				jumpTimeRemaining = maxJumpTime;
 				groundedCooldown = groundedCooldownDuration;
 				jumpBufferTime = 0;
 				coyoteTime = 0;
@@ -203,6 +226,7 @@ public class PlayerController : MonoBehaviour
 	private void MovementWrapup()
 	{
 		rb.position += velocity * Time.deltaTime;
+		Debug.Log(new Vector2(velocity.x, velocity.z).magnitude);
 
 		float frameFriction = 1 + friction * Time.deltaTime;
 		velocity.x /= frameFriction;
@@ -212,6 +236,7 @@ public class PlayerController : MonoBehaviour
 		else velocity.y -= gravity * Time.deltaTime;
 
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
+		timeSinceLanded += Time.deltaTime;
 	}
 
 	private void Shoot()
