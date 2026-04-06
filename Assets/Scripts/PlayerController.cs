@@ -218,23 +218,10 @@ public class PlayerController : MonoBehaviour
 	{
 		if (attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
 		{
-			// Basic hit check
 			RaycastHit hit;
-			bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
-			if (hasHit)
-			{
-				Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
-				if (hit.collider.CompareTag("Hitable"))
-				{
-					hit.collider.GetComponentInParent<Hitable>().Hit();
-					Instantiate(enemyHitParticles, hit.point, particleRotation);
-				}
-				else Instantiate(floorHitParticles, hit.point, particleRotation);
+			bool hasHit;
 
-				return;
-			}
-
-			// Aim assisted hit check (on basic check failure)
+			// Aim assisted hit check
 			Vector3 direction = cam.transform.forward;
 			foreach (Transform enemy in enemies.GetEnemyList())
 			{
@@ -251,14 +238,24 @@ public class PlayerController : MonoBehaviour
 				Debug.Log(angleDisparity);
 				if (angleDisparity > 0.75 + distance * aimAssistPerMeter) continue;
 
-				// Is there line of sight? (this is likely already true, but better safe than sorry.)
+				// Is there line of sight?
+				
 				hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
 				if (hasHit && hit.collider.transform == enemy)
 				{
 					enemy.GetComponentInParent<Hitable>().Hit();
 					Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 					Instantiate(enemyHitParticles, hit.point, particleRotation);
+					return;
 				}
+			}
+
+			// Wall hit check
+			hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
+			if (hasHit)
+			{
+				Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
+				Instantiate(floorHitParticles, hit.point, particleRotation);
 			}
 		}
 	}
