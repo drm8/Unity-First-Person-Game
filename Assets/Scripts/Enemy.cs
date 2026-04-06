@@ -8,9 +8,6 @@ public class Enemy : Hitable
     private float maxHealth = 4.9f;
 	private float health;
 
-    [SerializeField]
-    ParticleSystem particles;
-
 	private Transform playerTransform;
 
 	[SerializeField]
@@ -46,9 +43,6 @@ public class Enemy : Hitable
 
 	public override void Hit(float damage = 1)
 	{
-        particles.transform.LookAt(playerTransform);
-        particles.Play();
-
         hitFlashDelta = hitFlashDuration;
 
 		health -= damage;

@@ -2,6 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 public class PlayerController : MonoBehaviour
 {
@@ -62,6 +63,11 @@ public class PlayerController : MonoBehaviour
 
 	[SerializeField]
 	float aimAssistPerMeter = 0.05f;
+
+	[SerializeField]
+	ParticleSystem enemyHitParticles;
+	[SerializeField]
+	ParticleSystem floorHitParticles;
 
 	EnemyManager enemies;
 
@@ -212,30 +218,47 @@ public class PlayerController : MonoBehaviour
 	{
 		if (attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
 		{
+			// Basic hit check
+			RaycastHit hit;
+			bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
+			if (hasHit)
+			{
+				Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
+				if (hit.collider.CompareTag("Hitable"))
+				{
+					hit.collider.GetComponentInParent<Hitable>().Hit();
+					Instantiate(enemyHitParticles, hit.point, particleRotation);
+				}
+				else Instantiate(floorHitParticles, hit.point, particleRotation);
+
+				return;
+			}
+
+			// Aim assisted hit check (on basic check failure)
 			Vector3 direction = cam.transform.forward;
 			foreach (Transform enemy in enemies.GetEnemyList())
 			{
-				Vector3 positionDifference = enemy.position - transform.position;
+				Vector3 positionDifference = enemy.position - cam.transform.position;
 				float distance = positionDifference.magnitude;
 
 				// Is the enemy close enough?
 				if (distance > shootDistance) continue;
 
-				Debug.Log(Vector3.Distance(positionDifference, Vector3.Project(positionDifference, direction)));
+				// Is the angle close enough?
+				Vector3 flattenedDirection = new Vector3(direction.x, direction.y / 2, direction.z);
+				Vector3 flattenedPositionDifference = new Vector3(positionDifference.x, positionDifference.y / 2, positionDifference.z);
+				float angleDisparity = Vector3.Distance(flattenedPositionDifference, Vector3.Project(flattenedPositionDifference, flattenedDirection));
+				Debug.Log(angleDisparity);
+				if (angleDisparity > 0.75 + distance * aimAssistPerMeter) continue;
 
-				if (Vector3.Distance(positionDifference, Vector3.Project(positionDifference, direction)) > 0.75 + distance * aimAssistPerMeter) continue;
-
-				enemy.GetComponentInParent<Hitable>().Hit();
-
-				//RaycastHit hit;
-				//bool hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
-				//if (hasHit)
-				//{
-				//	if (hit.collider.CompareTag("Hitable"))
-				//	{
-				//		hit.collider.GetComponentInParent<Hitable>().Hit();
-				//	}
-				//}
+				// Is there line of sight? (this is likely already true, but better safe than sorry.)
+				hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
+				if (hasHit && hit.collider.transform == enemy)
+				{
+					enemy.GetComponentInParent<Hitable>().Hit();
+					Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
+					Instantiate(enemyHitParticles, hit.point, particleRotation);
+				}
 			}
 		}
 	}
