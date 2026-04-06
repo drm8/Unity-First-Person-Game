@@ -235,7 +235,6 @@ public class PlayerController : MonoBehaviour
 				Vector3 flattenedDirection = new Vector3(direction.x, direction.y / 2, direction.z);
 				Vector3 flattenedPositionDifference = new Vector3(positionDifference.x, positionDifference.y / 2, positionDifference.z);
 				float angleDisparity = Vector3.Distance(flattenedPositionDifference, Vector3.Project(flattenedPositionDifference, flattenedDirection));
-				Debug.Log(angleDisparity);
 				if (angleDisparity > 0.75 + distance * aimAssistPerMeter) continue;
 
 				// Is there line of sight?

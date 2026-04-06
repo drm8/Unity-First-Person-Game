@@ -7,4 +7,9 @@ public class Hitable : MonoBehaviour
     {
 
     }
+
+	private void OnDestroy()
+	{
+		FindObjectsByType<EnemyManager>(FindObjectsSortMode.InstanceID)[0].RemoveEnemy(transform);
+	}
 }

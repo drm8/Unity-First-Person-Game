@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -23,10 +24,24 @@ public class EnemyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+		//foreach (Transform child in GetComponentsInChildren<Transform>())
+		//{
+  //          for (int i = enemyList.Count - 1; i >= 0; i--) {
+  //              if (enemyList[i].ShouldBeDestroyed())
+  //              {
+  //                  enemyList.RemoveAt(i);
+		//		}
+		//	}
+		//}
+	}
+
+    public void RemoveEnemy(Transform enemy)
+    {
+        enemyList.Remove(enemy);
     }
 
-    public List<Transform> GetEnemyList()
+
+	public List<Transform> GetEnemyList()
     {
         return enemyList;
     }
