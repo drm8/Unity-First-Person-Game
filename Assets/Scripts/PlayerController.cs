@@ -225,7 +225,8 @@ public class PlayerController : MonoBehaviour
 
 	private void MovementWrapup()
 	{
-		rb.position += velocity * Time.deltaTime;
+		rb.linearVelocity = velocity;
+		//rb.position += velocity * Time.deltaTime;
 		Debug.Log(new Vector2(velocity.x, velocity.z).magnitude);
 
 		float frameFriction = 1 + friction * Time.deltaTime;
