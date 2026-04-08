@@ -11,6 +11,12 @@ public class PlayerController : MonoBehaviour
 	private bool moving = false;
 
 	[SerializeField]
+	private float speedBoostDecay = 1;
+	[SerializeField]
+	private float speedBoostStoppedDecay = 4;
+	private float speedBoost = 0;
+
+	[SerializeField]
 	private float minSquareSpeed = 0.01f;
 
 	[SerializeField]
@@ -58,6 +64,8 @@ public class PlayerController : MonoBehaviour
 	private float jumpSpeedBoost = 10f; // Speed boost when jumping
 	[SerializeField]
 	private float bounceWindow = 0.1f; // The window of time after hitting the ground for the player to bounce
+	[SerializeField]
+	private float bounceVelocityCut = 11; // How much speed is cut from the previous fall speed when determining bounce speed boost
 	[SerializeField]
 	private float bounceSpeedMultiplier = 0.75f; // Speed boost proportional to velocity.y when jumping right after landing
 	private float timeSinceLanded;
@@ -215,8 +223,8 @@ public class PlayerController : MonoBehaviour
 				velocity.y += minJumpStrength;
 
 				// XZ velocity
-				MoveBySpeed(jumpSpeedBoost);
-				if (timeSinceLanded < bounceWindow) MoveBySpeed(previousFallSpeed * bounceSpeedMultiplier);
+				speedBoost += jumpSpeedBoost;
+				if (timeSinceLanded < bounceWindow) speedBoost += Mathf.Max(0, previousFallSpeed-bounceVelocityCut) * bounceSpeedMultiplier;
 
 				// Everything else or something
 				jumpTimeRemaining = maxJumpTime;
@@ -237,12 +245,19 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
+	public float GetFallSpeed()
+	{
+		if (grounded && timeSinceLanded < bounceWindow) return -previousFallSpeed;
+		else return velocity.y;
+	}
+
 	private void MovementWrapup()
 	{
-		rb.linearVelocity = velocity;
-		//rb.position += velocity * Time.deltaTime;
-		Debug.Log(new Vector2(velocity.x, velocity.z).magnitude);
+		rb.linearVelocity = new Vector3(velocity.x * (1 + speedBoost), velocity.y, velocity.z * (1 + speedBoost));
+		Debug.Log(speedBoost);
 
+		speedBoost /= 1 + (moving ? speedBoostDecay : speedBoostStoppedDecay) * Time.deltaTime;
+		if (speedBoost < 0.01) speedBoost = 0;
 		float frameFriction = 1 + friction * Time.deltaTime;
 		velocity.x /= frameFriction;
 		velocity.z /= frameFriction;

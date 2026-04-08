@@ -2335,6 +2335,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   moveSpeed: 75
+  speedBoostDecay: 1
+  speedBoostStoppedDecay: 4
   minSquareSpeed: 0.01
   friction: 10
   lookLimitV: 80
@@ -2343,17 +2345,18 @@ MonoBehaviour:
   addtionalJumpStrength: 40
   maxJumpTime: 0.3
   gravity: 30
-  maxFallSpeed: -15
+  maxFallSpeed: -50
   groundedRadius: 0.35
   groundCheckDistance: 0.68
   groundedCooldownDuration: 0.1
   coyoteDuration: 0.2
-  jumpSpeedBoost: 0
+  jumpSpeedBoost: 0.25
   bounceWindow: 0.1
-  bounceSpeedMultiplier: 0
-  jumpBufferDuration: 0.1
+  bounceVelocityCut: 11
+  bounceSpeedMultiplier: 1
+  jumpBufferDuration: 0.15
   shootDistance: 500
-  aimAssistPerMeter: 0.03
+  aimAssistPerMeter: 0.04
   enemyHitParticles: {fileID: 4162617835306708343, guid: e20abd714548d134da7a45b70277a1d9, type: 3}
   floorHitParticles: {fileID: 4162617835306708343, guid: 05da811fc55ab7749ad6aa417ee28b35, type: 3}
 --- !u!54 &1502815711
