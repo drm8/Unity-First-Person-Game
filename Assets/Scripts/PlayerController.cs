@@ -8,6 +8,10 @@ public class PlayerController : MonoBehaviour
 {
 	[SerializeField]
 	private float moveSpeed = 10f;
+	private bool moving = false;
+
+	[SerializeField]
+	private float minSquareSpeed = 0.01f;
 
 	[SerializeField]
 	private float friction = 1f;
@@ -29,6 +33,9 @@ public class PlayerController : MonoBehaviour
 
 	[SerializeField]
 	private float gravity = 10;
+
+	[SerializeField]
+	private float maxFallSpeed = -15;
 
 	[SerializeField]
 	private float groundedRadius = 0.5f;
@@ -121,10 +128,15 @@ public class PlayerController : MonoBehaviour
 		Rotate();
 		FlatMotion();
 		Jump();
-		MovementWrapup();
+		//MovementWrapup();
 
 		// Misc
 		Shoot();
+	}
+
+	private void FixedUpdate()
+	{
+		MovementWrapup();
 	}
 
 	public void AddForce(Vector3 force)
@@ -160,6 +172,7 @@ public class PlayerController : MonoBehaviour
 	private void MoveBySpeed(float speed)
 	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
+		moving = !moveDirection.Equals(Vector3.zero);
 		moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
@@ -175,7 +188,8 @@ public class PlayerController : MonoBehaviour
 		{
 			bool preGrounded = grounded;
 			RaycastHit hit; // I don't know how to call SphereCast with a maxDistance without a hitInfo param.
-			grounded = Physics.SphereCast(transform.position, groundedRadius, -transform.up, out hit, groundCheckDistance);
+			float checkDistance = grounded ? groundCheckDistance + 0.05f : groundCheckDistance;
+			grounded = Physics.SphereCast(transform.position, groundedRadius, -transform.up, out hit, checkDistance);
 
 			if (grounded && !preGrounded)
 			{
@@ -232,9 +246,15 @@ public class PlayerController : MonoBehaviour
 		float frameFriction = 1 + friction * Time.deltaTime;
 		velocity.x /= frameFriction;
 		velocity.z /= frameFriction;
+		if (!moving && velocity.x * velocity.x + velocity.z * velocity.z < minSquareSpeed)
+		{
+			velocity.x = 0;
+			velocity.z = 0;
+		}
 
 		if (grounded && velocity.y < 0) velocity.y = -0.5f;
 		else velocity.y -= gravity * Time.deltaTime;
+		if (velocity.y < maxFallSpeed) velocity.y = maxFallSpeed;
 
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
 		timeSinceLanded += Time.deltaTime;
