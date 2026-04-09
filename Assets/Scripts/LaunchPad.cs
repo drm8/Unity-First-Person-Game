@@ -33,8 +33,9 @@ public class LaunchPad : MonoBehaviour
 		if (cooldown <= 0 && collision.collider.CompareTag("Player"))
 		{
             PlayerController playerController = collision.collider.GetComponentInParent<PlayerController>();
-            float currentYMagnitude = Mathf.Abs(playerController.GetFallSpeed());
-			float force = launchStrength + currentYMagnitude + Mathf.Min(currentYMagnitude * (playerVelMultiplier - 1), maxExtraStrength);
+            float currentYMagnitude = Mathf.Abs(playerController.GetVelocity().y);
+            float fallSpeed = Mathf.Abs(playerController.GetFallSpeed());
+			float force = launchStrength + currentYMagnitude + Mathf.Min(fallSpeed * (playerVelMultiplier - 1), maxExtraStrength);
 			playerController.AddForce(Vector3.up * force);
             cooldown = cooldownDuration;
 

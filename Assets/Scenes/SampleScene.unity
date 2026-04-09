@@ -2353,7 +2353,7 @@ MonoBehaviour:
   jumpSpeedBoost: 0.25
   bounceWindow: 0.1
   bounceVelocityCut: 11
-  bounceSpeedMultiplier: 1
+  bounceSpeedMultiplier: 0.1
   jumpBufferDuration: 0.15
   shootDistance: 500
   aimAssistPerMeter: 0.04

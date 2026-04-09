@@ -254,7 +254,7 @@ public class PlayerController : MonoBehaviour
 	private void MovementWrapup()
 	{
 		rb.linearVelocity = new Vector3(velocity.x * (1 + speedBoost), velocity.y, velocity.z * (1 + speedBoost));
-		Debug.Log(speedBoost);
+		//Debug.Log(speedBoost);
 
 		speedBoost /= 1 + (moving ? speedBoostDecay : speedBoostStoppedDecay) * Time.deltaTime;
 		if (speedBoost < 0.01) speedBoost = 0;
