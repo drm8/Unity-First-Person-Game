@@ -2607,9 +2607,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff788903298028a4085857d80f59893a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaunchPad
-  launchStrength: 20
-  playerVelMultiplier: 2
-  maxExtraStrength: 5
+  launchStrength: 15
+  playerVelMultiplier: 1.5
+  maxExtraStrength: 10
   cooldownDuration: 0.1
 --- !u!1 &1853573755
 GameObject:
