@@ -94,10 +94,19 @@ public class PlayerController : MonoBehaviour
 	private InputAction attackAction;
 
 	[SerializeField]
-	float shootDistance = 500;
+	private float shootDistance = 500;
 
 	[SerializeField]
-	float aimAssistPerMeter = 0.05f;
+	private float aimAssistPerMeter = 0.05f;
+
+	[SerializeField]
+	private int maxAmmo = 3;
+	private int ammo;
+
+	[SerializeField]
+	private float reloadVelocity = 8; // Velocity requirement to reload.
+	[SerializeField]
+	private bool shotLoaded = true;
 
 	[SerializeField]
 	ParticleSystem enemyHitParticles;
@@ -127,6 +136,7 @@ public class PlayerController : MonoBehaviour
 		coyoteTime = coyoteDuration;
 		timeSinceLanded = bounceWindow;
 		jumpBufferTime = jumpBufferDuration;
+		ammo = maxAmmo;
 
 		moveAction = InputSystem.actions.FindAction("Move");
 		lookAction = InputSystem.actions.FindAction("Look");
@@ -261,6 +271,8 @@ public class PlayerController : MonoBehaviour
 				// Head jump
 				if (headJump)
 				{
+					if (ammo == 0) shotLoaded = true;
+					ammo = maxAmmo;
 					headJumpCooldown = headJumpCooldownDuration;
 					
 					Vector3 previousPosition = transform.position;
@@ -322,8 +334,16 @@ public class PlayerController : MonoBehaviour
 
 	private void Shoot()
 	{
-		if (attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
+		if (!shotLoaded && ammo > 0 && Mathf.Abs(velocity.magnitude*(1+speedBoost)) >= reloadVelocity)
 		{
+			shotLoaded = true;
+		}
+
+		if (shotLoaded && ammo > 0 && attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
+		{
+			shotLoaded = false;
+			ammo--;
+
 			RaycastHit hit;
 			bool hasHit;
 
