@@ -257,7 +257,11 @@ public class PlayerController : MonoBehaviour
 				if (headJump)
 				{
 					headJumpCooldown = headJumpCooldownDuration;
+					
+					Vector3 previousPosition = transform.position;
 					transform.position = jumpedEnemy.HeadPosition() + Vector3.up * halfHeight;
+
+					camScript.Shift(transform.position - previousPosition);
 				}
 
 				// Everything else or something

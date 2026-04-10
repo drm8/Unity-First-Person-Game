@@ -24,16 +24,8 @@ public class EnemyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		//foreach (Transform child in GetComponentsInChildren<Transform>())
-		//{
-  //          for (int i = enemyList.Count - 1; i >= 0; i--) {
-  //              if (enemyList[i].ShouldBeDestroyed())
-  //              {
-  //                  enemyList.RemoveAt(i);
-		//		}
-		//	}
-		//}
-	}
+        
+    }
 
     public void RemoveEnemy(Transform enemy)
     {

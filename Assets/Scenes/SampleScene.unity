@@ -614,6 +614,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc3d7a8f27f57346874ae9e611b0d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  head_offset: 1
   maxHealth: 4.9
   hitFlashDuration: 0.35
 --- !u!136 &255311536
@@ -1963,6 +1964,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc3d7a8f27f57346874ae9e611b0d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  head_offset: 1
   maxHealth: 4.9
   hitFlashDuration: 0.35
 --- !u!136 &1085600119
@@ -2107,6 +2109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dc3d7a8f27f57346874ae9e611b0d03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  head_offset: 1
   maxHealth: 4.9
   hitFlashDuration: 0.35
 --- !u!136 &1092622841
@@ -2357,6 +2360,7 @@ MonoBehaviour:
   jumpBufferDuration: 0.15
   headJumpRadius: 0.85
   headJumpScanDistance: 0.5
+  halfHeight: 1
   headJumpCooldownDuration: 0.15
   shootDistance: 500
   aimAssistPerMeter: 0.04
@@ -2420,7 +2424,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1502815709}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 3
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -2662,6 +2666,7 @@ MonoBehaviour:
   dipAccel: 50
   dipDrag: 20
   dipEndTolerance: -0.01
+  defaultOffsetDuration: 2
 --- !u!1 &2017331547
 GameObject:
   m_ObjectHideFlags: 0
