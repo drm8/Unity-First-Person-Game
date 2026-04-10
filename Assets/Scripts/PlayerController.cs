@@ -1,4 +1,5 @@
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -121,6 +122,9 @@ public class PlayerController : MonoBehaviour
 
 	private Rigidbody rb;
 
+	private AmmoCount ammoUI;
+	private Crosshair crosshairUI;
+
 	private void Awake()
 	{
 		// Turning v-sync on. I don't feel like making an entire script for this right now.
@@ -148,7 +152,9 @@ public class PlayerController : MonoBehaviour
 		cam = GetComponentInChildren<Camera>();
 		rb = GetComponent<Rigidbody>();
 		camScript = GetComponentInChildren<PlayerCamera>();
-	}
+		ammoUI = FindObjectsByType<AmmoCount>(FindObjectsSortMode.InstanceID)[0];
+		crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
+}
 
 	// Update is called once per frame
 	void Update()
@@ -271,8 +277,14 @@ public class PlayerController : MonoBehaviour
 				// Head jump
 				if (headJump)
 				{
-					if (ammo == 0) shotLoaded = true;
+					if (ammo == 0)
+					{
+						shotLoaded = true;
+						crosshairUI.SetActive(true);
+					}
 					ammo = maxAmmo;
+					ammoUI.UpdateText(ammo, maxAmmo);
+
 					headJumpCooldown = headJumpCooldownDuration;
 					
 					Vector3 previousPosition = transform.position;
@@ -310,7 +322,6 @@ public class PlayerController : MonoBehaviour
 	private void MovementWrapup()
 	{
 		rb.linearVelocity = new Vector3(velocity.x * (1 + speedBoost), velocity.y, velocity.z * (1 + speedBoost));
-		//Debug.Log(speedBoost);
 
 		speedBoost /= 1 + (moving ? speedBoostDecay : speedBoostStoppedDecay) * Time.deltaTime;
 		if (speedBoost < 0.01) speedBoost = 0;
@@ -337,12 +348,16 @@ public class PlayerController : MonoBehaviour
 		if (!shotLoaded && ammo > 0 && Mathf.Abs(velocity.magnitude*(1+speedBoost)) >= reloadVelocity)
 		{
 			shotLoaded = true;
+			crosshairUI.SetActive(true);
 		}
 
 		if (shotLoaded && ammo > 0 && attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
 		{
 			shotLoaded = false;
 			ammo--;
+			crosshairUI.SetActive(false);
+			ammoUI.UpdateText(ammo, maxAmmo);
+
 
 			RaycastHit hit;
 			bool hasHit;
