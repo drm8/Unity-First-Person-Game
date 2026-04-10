@@ -29,7 +29,9 @@ public class PlayerCamera : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void Update() {}
+
+    void LateUpdate()
     {
         // Initial offset
         DipUpdate();
@@ -43,13 +45,34 @@ public class PlayerCamera : MonoBehaviour
         }
 
         // Applying final offset
-        if (!transform.localPosition.Equals(currentOffset))
+        if (!transform.localPosition.Equals(Vector3.zero) || !currentOffset.Equals(Vector3.zero))
         {
-            transform.localPosition = currentOffset;
-        }
+			transform.position = transform.parent.position + currentOffset;
+		}
     }
 
-    private void DipUpdate()
+    public void UpdatePositionEarly()
+    {
+		// Initial offset
+		DipUpdate();
+		Vector3 currentOffset = Vector3.up * dipY;
+
+		// Adding from offsets list
+		for (int i = offsets.Count - 1; i >= 0; i--)
+		{
+			currentOffset += offsets[i].GetCurrent();
+			if (offsets[i].IsDone()) offsets.RemoveAt(i);
+		}
+
+		// Applying final offset
+		if (!transform.localPosition.Equals(Vector3.zero) || !currentOffset.Equals(Vector3.zero))
+		{
+			transform.position = transform.parent.position + currentOffset;
+		}
+	}
+
+
+	private void DipUpdate()
     {
         if (dipActive)
         {
@@ -96,11 +119,16 @@ public class PlayerCamera : MonoBehaviour
         public Vector3 Update()
         {
             timeLeft = Mathf.Max(0, timeLeft - Time.deltaTime);
-            float progress = 1 - timeLeft/duration;
-            return Vector3.Lerp(base_, Vector3.zero, progress*progress);
+            return GetCurrent();
         }
 
-        public bool IsDone()
+		public Vector3 GetCurrent()
+		{
+			float progress = timeLeft / duration;
+			return Vector3.Lerp(base_, Vector3.zero, 1 - progress * progress);
+		}
+
+		public bool IsDone()
         {
             return timeLeft == 0;
         }

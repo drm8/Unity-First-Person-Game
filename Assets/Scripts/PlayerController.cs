@@ -144,10 +144,8 @@ public class PlayerController : MonoBehaviour
 	void Update()
 	{
 		// Movement
-		Rotate();
 		FlatMotion();
 		Jump();
-		//MovementWrapup();
 
 		// Misc
 		Shoot();
@@ -157,6 +155,13 @@ public class PlayerController : MonoBehaviour
 	{
 		MovementWrapup();
 	}
+
+	private void LateUpdate()
+	{
+		Rotate();
+	}
+
+
 
 	public void AddForce(Vector3 force)
 	{
@@ -261,7 +266,8 @@ public class PlayerController : MonoBehaviour
 					Vector3 previousPosition = transform.position;
 					transform.position = jumpedEnemy.HeadPosition() + Vector3.up * halfHeight;
 
-					camScript.Shift(transform.position - previousPosition);
+					camScript.Shift(previousPosition - transform.position);
+					camScript.UpdatePositionEarly();
 				}
 
 				// Everything else or something
