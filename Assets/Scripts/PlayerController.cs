@@ -75,6 +75,17 @@ public class PlayerController : MonoBehaviour
 	private float jumpBufferDuration = 0.1f;
 	private float jumpBufferTime;
 
+	[SerializeField]
+	private float headJumpRadius = 0.85f;
+	[SerializeField]
+	private float headJumpScanDistance = 0.5f;
+	[SerializeField]
+	private float halfHeight = 1;
+
+	[SerializeField]
+	private float headJumpCooldownDuration = 0.1f;
+	private float headJumpCooldown;
+
 	private Vector3 velocity = new Vector3(0, 0, 0);
 
 	private InputAction moveAction;
@@ -185,9 +196,8 @@ public class PlayerController : MonoBehaviour
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
 
-	private void Jump()
+	private void GroundCheck()
 	{
-		// Ground check
 		if (groundedCooldown > 0)
 		{
 			grounded = false;
@@ -206,8 +216,12 @@ public class PlayerController : MonoBehaviour
 				timeSinceLanded = 0;
 			}
 		}
+	}
 
-		// Jumping
+	private void Jump()
+	{
+		GroundCheck();
+
 		if (grounded) coyoteTime = coyoteDuration;
 		else if (coyoteTime > 0) coyoteTime -= Time.deltaTime;
 
@@ -216,7 +230,20 @@ public class PlayerController : MonoBehaviour
 
 		if (jumpAction.IsPressed())
 		{
-			if (jumpBufferTime > 0 && coyoteTime > 0)
+			// Head jump check
+			bool headJump = false;
+			Hitable jumpedEnemy = null;
+			if (headJumpCooldown <= 0)
+			{
+				RaycastHit hit;
+				if (Physics.SphereCast(transform.position, headJumpScanDistance, -transform.up, out hit, headJumpRadius))
+				{
+					jumpedEnemy = hit.transform.GetComponent<Hitable>();
+					if (jumpedEnemy != null) headJump = true;
+				}
+			}
+
+			if (jumpBufferTime > 0 && (coyoteTime > 0 || headJump))
 			{
 				// Y velocity
 				if (velocity.y < 0) velocity.y = 0;
@@ -225,6 +252,13 @@ public class PlayerController : MonoBehaviour
 				// XZ velocity
 				speedBoost += jumpSpeedBoost;
 				if (timeSinceLanded < bounceWindow) speedBoost += Mathf.Max(0, previousFallSpeed-bounceVelocityCut) * bounceSpeedMultiplier;
+
+				// Head jump
+				if (headJump)
+				{
+					headJumpCooldown = headJumpCooldownDuration;
+					transform.position = jumpedEnemy.HeadPosition() + Vector3.up * halfHeight;
+				}
 
 				// Everything else or something
 				jumpTimeRemaining = maxJumpTime;
@@ -271,6 +305,7 @@ public class PlayerController : MonoBehaviour
 		else velocity.y -= gravity * Time.deltaTime;
 		if (velocity.y < maxFallSpeed) velocity.y = maxFallSpeed;
 
+		if (headJumpCooldown > 0) headJumpCooldown -= Time.deltaTime;
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
 		timeSinceLanded += Time.deltaTime;
 	}

@@ -800,7 +800,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 90
   orthographic: 0
@@ -2355,6 +2355,9 @@ MonoBehaviour:
   bounceVelocityCut: 11
   bounceSpeedMultiplier: 0.1
   jumpBufferDuration: 0.15
+  headJumpRadius: 0.85
+  headJumpScanDistance: 0.5
+  headJumpCooldownDuration: 0.15
   shootDistance: 500
   aimAssistPerMeter: 0.04
   enemyHitParticles: {fileID: 4162617835306708343, guid: e20abd714548d134da7a45b70277a1d9, type: 3}
