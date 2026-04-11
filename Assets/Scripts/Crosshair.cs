@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class Crosshair : MonoBehaviour
 {
@@ -23,6 +23,6 @@ public class Crosshair : MonoBehaviour
 	public void SetActive(bool active)
 	{
 		int opacity = active ? activeOpacity : inactiveOpacity;
-		image.tintColor = new Color(255, 255, 255, opacity);
+		image.CrossFadeAlpha(opacity, 0.2f, true);
 	}
 }

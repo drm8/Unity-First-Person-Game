@@ -154,7 +154,10 @@ public class PlayerController : MonoBehaviour
 		camScript = GetComponentInChildren<PlayerCamera>();
 		ammoUI = FindObjectsByType<AmmoCount>(FindObjectsSortMode.InstanceID)[0];
 		crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
-}
+
+        crosshairUI.SetActive(true);
+        ammoUI.UpdateText(ammo, maxAmmo);
+    }
 
 	// Update is called once per frame
 	void Update()
