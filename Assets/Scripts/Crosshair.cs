@@ -3,10 +3,11 @@ using UnityEngine.UI;
 
 public class Crosshair : MonoBehaviour
 {
-    [SerializeField] private int activeOpacity = 192;
-	[SerializeField] private int inactiveOpacity = 64;
+    [SerializeField] private float activeOpacity = 0.75f;
+	[SerializeField] private float inactiveOpacity = 0.25f;
+    [SerializeField] private float fadeSpeed = 0.1f;
 
-	private Image image;
+    private Image image;
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
@@ -22,7 +23,7 @@ public class Crosshair : MonoBehaviour
 
 	public void SetActive(bool active)
 	{
-		int opacity = active ? activeOpacity : inactiveOpacity;
-		image.CrossFadeAlpha(opacity, 0.2f, true);
+		float opacity = active ? activeOpacity : inactiveOpacity;
+		image.CrossFadeAlpha(opacity, fadeSpeed, true);
 	}
 }

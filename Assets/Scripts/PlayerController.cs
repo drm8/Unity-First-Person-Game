@@ -291,7 +291,7 @@ public class PlayerController : MonoBehaviour
 					headJumpCooldown = headJumpCooldownDuration;
 					
 					Vector3 previousPosition = transform.position;
-					transform.position = jumpedEnemy.HeadPosition() + Vector3.up * halfHeight;
+					transform.position = GetHeadJumpPosition(jumpedEnemy);
 
 					camScript.Shift(previousPosition - transform.position);
 					camScript.UpdatePositionEarly();
@@ -314,6 +314,24 @@ public class PlayerController : MonoBehaviour
 		{
 			jumpTimeRemaining = 0;
 		}
+	}
+
+	private Vector3 GetHeadJumpPosition(Hitable enemy)
+	{
+        Vector3 center = enemy.HeadPosition() + Vector3.up * halfHeight;
+        if (velocity.sqrMagnitude == 0) return center; // Zero velocity edge case
+
+        if (Vector3.Angle(center - transform.position, velocity) >= 0)
+		{
+            // Teleport the player above the enemy's center.
+            return center;
+        }
+		else
+		{
+            // If the player has passed the center of the enemy already, teleporting to the usual place would send the player
+            // backwards, which feels bad. Instead, project onto the player's velocity with the usual place as an origin.
+            return Vector3.Project(transform.position - center, velocity) + center;
+        }
 	}
 
 	public float GetFallSpeed()
