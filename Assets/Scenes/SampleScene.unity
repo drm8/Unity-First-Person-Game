@@ -1811,7 +1811,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 250, y: 0.5, z: 250}
+    m_Scale: {x: 250, y: 0.25, z: 250}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -6011,12 +6011,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 234346196}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.92899, y: -1, z: 4.20533}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &255311533
 GameObject:
@@ -6303,11 +6303,7 @@ Transform:
   - {fileID: 1182953871}
   - {fileID: 193359137}
   - {fileID: 98397705}
-  - {fileID: 570208743}
-  - {fileID: 679491362}
-  - {fileID: 1656500462}
-  - {fileID: 749245318}
-  - {fileID: 426001268}
+  - {fileID: 1025150433}
   - {fileID: 1010402966}
   - {fileID: 1038065282}
   - {fileID: 2095266515}
@@ -6934,7 +6930,7 @@ GameObject:
   - component: {fileID: 426001271}
   - component: {fileID: 426001270}
   - component: {fileID: 426001269}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Water Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6954,7 +6950,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 309486907}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!64 &426001269
 MeshCollider:
@@ -7171,7 +7167,8 @@ GameObject:
   - component: {fileID: 570208743}
   - component: {fileID: 570208746}
   - component: {fileID: 570208745}
-  m_Layer: 0
+  - component: {fileID: 570208747}
+  m_Layer: 4
   m_Name: Water Surface
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7191,7 +7188,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 309486907}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &570208745
 MeshRenderer:
@@ -7249,6 +7246,28 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 570208742}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!64 &570208747
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570208742}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1001 &619334781
 PrefabInstance:
@@ -7453,7 +7472,7 @@ GameObject:
   - component: {fileID: 679491362}
   - component: {fileID: 679491364}
   - component: {fileID: 679491363}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Water Surface (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7473,7 +7492,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 309486907}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &679491363
 MeshRenderer:
@@ -7673,7 +7692,7 @@ GameObject:
   - component: {fileID: 749245318}
   - component: {fileID: 749245320}
   - component: {fileID: 749245319}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Water Surface (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7693,7 +7712,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 309486907}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &749245319
 MeshRenderer:
@@ -8549,6 +8568,83 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4722806760961007232, guid: 4e538ba031dcc094db381702c5cb522e, type: 3}
   m_PrefabInstance: {fileID: 1015821257}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1025150432
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1025150433}
+  - component: {fileID: 1025150434}
+  - component: {fileID: 1025150435}
+  m_Layer: 4
+  m_Name: Water
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1025150433
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025150432}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 5000, y: 1, z: 5000}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 570208743}
+  - {fileID: 679491362}
+  - {fileID: 1656500462}
+  - {fileID: 749245318}
+  - {fileID: 426001268}
+  - {fileID: 234346199}
+  m_Father: {fileID: 309486907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1025150434
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025150432}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: -1.5, z: 0}
+--- !u!114 &1025150435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025150432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34b4f7c38bbc375449d837c8207df2cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Water
+  cooldownDuration: 0.1
+  yVelMin: 8
+  yVelMax: 16
+  horizVel: 5
+  speedBoost: 1
 --- !u!1 &1038065281
 GameObject:
   m_ObjectHideFlags: 0
@@ -10143,12 +10239,19 @@ MonoBehaviour:
   halfHeight: 1
   headJumpCooldownDuration: 0.15
   shootDistance: 500
+  aimAssistBase: 0.9
   aimAssistPerMeter: 0.04
+  recoilDistanceThreshold: 10
+  recoilMaxVelocity: 15
+  recoilSpeedBoost: 1
   maxAmmo: 3
-  reloadVelocity: 8
+  reloadVelocity: 7.5
   shotLoaded: 1
   enemyHitParticles: {fileID: 4162617835306708343, guid: e20abd714548d134da7a45b70277a1d9, type: 3}
   floorHitParticles: {fileID: 4162617835306708343, guid: 05da811fc55ab7749ad6aa417ee28b35, type: 3}
+  defaultOnlyLayermask:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!54 &1502815711
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10532,7 +10635,7 @@ GameObject:
   - component: {fileID: 1656500462}
   - component: {fileID: 1656500464}
   - component: {fileID: 1656500463}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Water Surface (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10552,7 +10655,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 309486907}
+  m_Father: {fileID: 1025150433}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &1656500463
 MeshRenderer:
@@ -12243,4 +12346,3 @@ SceneRoots:
   - {fileID: 309486907}
   - {fileID: 906732632}
   - {fileID: 784875132}
-  - {fileID: 234346199}

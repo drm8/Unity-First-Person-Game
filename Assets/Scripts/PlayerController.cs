@@ -1,9 +1,11 @@
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
+using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class PlayerController : MonoBehaviour
 {
@@ -97,10 +99,19 @@ public class PlayerController : MonoBehaviour
 	[SerializeField]
 	private float shootDistance = 500;
 
-	[SerializeField]
+    [SerializeField]
+    private float aimAssistBase = 0.9f;
+    [SerializeField]
 	private float aimAssistPerMeter = 0.05f;
 
-	[SerializeField]
+    [SerializeField]
+    private float recoilDistanceThreshold = 5;
+    [SerializeField]
+    private float recoilMaxVelocity = 10;
+    [SerializeField]
+    private float recoilSpeedBoost = 0.5f;
+
+    [SerializeField]
 	private int maxAmmo = 3;
 	private int ammo;
 
@@ -125,7 +136,10 @@ public class PlayerController : MonoBehaviour
 	private AmmoCount ammoUI;
 	private Crosshair crosshairUI;
 
-	private void Awake()
+    [SerializeField]
+	private LayerMask defaultOnlyLayermask;
+
+    private void Awake()
 	{
 		// Turning v-sync on. I don't feel like making an entire script for this right now.
 		QualitySettings.vSyncCount = 1;
@@ -180,8 +194,6 @@ public class PlayerController : MonoBehaviour
 		Rotate();
 	}
 
-
-
 	public void AddForce(Vector3 force)
 	{
 		velocity += force;
@@ -192,7 +204,7 @@ public class PlayerController : MonoBehaviour
 		return velocity;
 	}
 
-	private void Rotate()
+    private void Rotate()
 	{
 		// Camera rotation (up and down)
 		Vector2 lookDirection = lookAction.ReadValue<Vector2>();
@@ -212,7 +224,7 @@ public class PlayerController : MonoBehaviour
 		MoveBySpeed(moveSpeed * Time.deltaTime);
 	}
 
-	private void MoveBySpeed(float speed)
+	public void MoveBySpeed(float speed)
 	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moving = !moveDirection.Equals(Vector3.zero);
@@ -231,7 +243,7 @@ public class PlayerController : MonoBehaviour
 			bool preGrounded = grounded;
 			RaycastHit hit; // I don't know how to call SphereCast with a maxDistance without a hitInfo param.
 			float checkDistance = grounded ? groundCheckDistance + 0.05f : groundCheckDistance;
-			grounded = Physics.SphereCast(transform.position, groundedRadius, -transform.up, out hit, checkDistance);
+			grounded = Physics.SphereCast(transform.position, groundedRadius, -transform.up, out hit, checkDistance, defaultOnlyLayermask);
 
 			if (grounded && !preGrounded)
 			{
@@ -379,7 +391,6 @@ public class PlayerController : MonoBehaviour
 			crosshairUI.SetActive(false);
 			ammoUI.UpdateText(ammo, maxAmmo);
 
-
 			RaycastHit hit;
 			bool hasHit;
 
@@ -397,7 +408,7 @@ public class PlayerController : MonoBehaviour
 				Vector3 flattenedDirection = new Vector3(direction.x, direction.y / 2, direction.z);
 				Vector3 flattenedPositionDifference = new Vector3(positionDifference.x, positionDifference.y / 2, positionDifference.z);
 				float angleDisparity = Vector3.Distance(flattenedPositionDifference, Vector3.Project(flattenedPositionDifference, flattenedDirection));
-				if (angleDisparity > 0.75 + distance * aimAssistPerMeter) continue;
+				if (angleDisparity > aimAssistBase + distance * aimAssistPerMeter) continue;
 
 				// Is there line of sight?
 				
@@ -405,7 +416,8 @@ public class PlayerController : MonoBehaviour
 				if (hasHit && hit.collider.transform == enemy)
 				{
 					enemy.GetComponentInParent<Hitable>().Hit();
-					Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
+                    RaycastRecoil(hit);
+                    Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 					Instantiate(enemyHitParticles, hit.point, particleRotation);
 					return;
 				}
@@ -415,9 +427,28 @@ public class PlayerController : MonoBehaviour
 			hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
 			if (hasHit)
 			{
-				Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
+                RaycastRecoil(hit);
+                Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 				Instantiate(floorHitParticles, hit.point, particleRotation);
 			}
 		}
 	}
+
+	private void RaycastRecoil(RaycastHit from)
+	{
+        Vector3 difference = transform.position - from.point;
+		float mag = difference.magnitude;
+        if (mag < recoilDistanceThreshold && mag > 0)
+		{
+			if (from.normal.Equals(Vector3.up)) velocity.y = 0;
+			float strength = (recoilDistanceThreshold - mag) / recoilDistanceThreshold;
+			velocity += difference.normalized * (strength * recoilMaxVelocity);
+			speedBoost += recoilSpeedBoost * Mathf.Sqrt(strength) * (1 - Mathf.Abs(Mathf.Cos(Vector3.Angle(Vector3.up, difference))));
+        }
+    }
+
+	public void AddSpeedBoost(float boost)
+	{
+		speedBoost += boost;
+    }
 }
