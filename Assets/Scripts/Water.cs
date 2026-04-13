@@ -35,7 +35,6 @@ public class Water : MonoBehaviour
             playerController.AddForce(Vector3.up * (Random.Range(yVelMin, yVelMax) - playerController.GetVelocity().y));
             playerController.MoveBySpeed(horizVel);
             playerController.AddSpeedBoost(speedBoost);
-            Debug.Log(playerController.GetVelocity());
             cooldown = cooldownDuration;
         }
     }
