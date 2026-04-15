@@ -210,11 +210,14 @@ public class PlayerController : MonoBehaviour
 		float newX = currentRotation - lookDirection.y * lookSensitivity;
 		if (currentRotation <= 90 && newX > lookLimitV) newX = lookLimitV;
 		if (currentRotation >= 180 && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
-		cam.transform.localRotation = Quaternion.Euler(new Vector3(newX, 0, 0));
+		//cam.transform.localRotation = Quaternion.Euler(new Vector3(newX, 0, 0));
+
+		float newY = cam.transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
+		cam.transform.rotation = Quaternion.Euler(new Vector3(newX, newY, 0));
 
 		// Player rotation (left and right)
-		float newY = transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
-		transform.rotation = Quaternion.Euler(new Vector3(0, newY, 0));
+		// float newY = transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
+		// transform.rotation = Quaternion.Euler(new Vector3(0, newY, 0));
 	}
 
 	private void FlatMotion()
@@ -226,7 +229,8 @@ public class PlayerController : MonoBehaviour
 	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moving = !moveDirection.Equals(Vector3.zero);
-		moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
+		// moveDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
+		moveDirection = GetForward() * moveDirection.y + GetRight() * moveDirection.x;
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
 
@@ -250,6 +254,20 @@ public class PlayerController : MonoBehaviour
 				timeSinceLanded = 0;
 			}
 		}
+	}
+
+	private Vector3 GetForward()
+	{
+		Vector3 forward = cam.transform.forward;
+		forward.y = 0;
+		return forward.normalized;
+	}
+
+	private Vector3 GetRight()
+	{
+		Vector3 right = cam.transform.right;
+		right.y = 0;
+		return right.normalized;
 	}
 
 	private void Jump()
