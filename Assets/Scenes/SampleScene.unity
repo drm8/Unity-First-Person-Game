@@ -7692,6 +7692,7 @@ GameObject:
   - component: {fileID: 749245318}
   - component: {fileID: 749245320}
   - component: {fileID: 749245319}
+  - component: {fileID: 749245321}
   m_Layer: 4
   m_Name: Water Surface (3)
   m_TagString: Untagged
@@ -7770,6 +7771,28 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 749245317}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!64 &749245321
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749245317}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &784369460
 GameObject:
@@ -10218,8 +10241,6 @@ MonoBehaviour:
   speedBoostStoppedDecay: 4
   minSquareSpeed: 0.01
   friction: 10
-  lookLimitV: 80
-  lookSensitivity: 0.2
   minJumpStrength: 7.5
   addtionalJumpStrength: 40
   maxJumpTime: 0.3
@@ -11341,6 +11362,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd8e20fce141f3e4f9e26184f940e60c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCamera
+  lookLimitV: 80
+  lookSensitivity: 0.2
   dipAccel: 50
   dipDrag: 20
   dipEndTolerance: -0.01

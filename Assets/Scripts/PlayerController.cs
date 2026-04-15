@@ -24,12 +24,6 @@ public class PlayerController : MonoBehaviour
 	private float friction = 1f;
 
 	[SerializeField]
-	private float lookLimitV = 70f;
-
-	[SerializeField]
-	private float lookSensitivity = 0.1f;
-
-	[SerializeField]
 	private float minJumpStrength = 10;
 
 	[SerializeField]
@@ -87,10 +81,12 @@ public class PlayerController : MonoBehaviour
 	private float headJumpCooldownDuration = 0.1f;
 	private float headJumpCooldown;
 
+	private bool teleportFlag = false;
+	private Vector3 teleportPosition;
+
 	private Vector3 velocity = new Vector3(0, 0, 0);
 
 	private InputAction moveAction;
-	private InputAction lookAction;
 	private InputAction jumpAction;
 	private InputAction attackAction;
 
@@ -155,7 +151,6 @@ public class PlayerController : MonoBehaviour
 		ammo = maxAmmo;
 
 		moveAction = InputSystem.actions.FindAction("Move");
-		lookAction = InputSystem.actions.FindAction("Look");
 		jumpAction = InputSystem.actions.FindAction("Jump");
 		attackAction = InputSystem.actions.FindAction("Attack");
 
@@ -184,12 +179,24 @@ public class PlayerController : MonoBehaviour
 
 	private void FixedUpdate()
 	{
+		Teleport();
 		MovementWrapup();
 	}
 
 	private void LateUpdate()
 	{
-		Rotate();
+		
+	}
+
+	private void Teleport()
+	{
+		if (teleportFlag)
+		{
+			teleportFlag = false;
+			camScript.Shift(transform.position - teleportPosition);
+			camScript.UpdatePositionEarly();
+			transform.position = teleportPosition;
+		}
 	}
 
 	public void AddForce(Vector3 force)
@@ -200,20 +207,6 @@ public class PlayerController : MonoBehaviour
 	public Vector3 GetVelocity()
 	{
 		return velocity;
-	}
-
-    private void Rotate()
-	{
-		// Camera rotation (up and down)
-		Vector2 lookDirection = lookAction.ReadValue<Vector2>();
-		float currentRotation = cam.transform.rotation.eulerAngles.x;
-		float newX = currentRotation - lookDirection.y * lookSensitivity;
-		if (currentRotation <= 90 && newX > lookLimitV) newX = lookLimitV;
-		if (currentRotation >= 180 && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
-
-        // Camera rotation (left and right)
-        float newY = cam.transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
-		cam.transform.rotation = Quaternion.Euler(new Vector3(newX, newY, 0));
 	}
 
 	private void FlatMotion()
@@ -312,12 +305,8 @@ public class PlayerController : MonoBehaviour
 					ammoUI.UpdateText(ammo, maxAmmo);
 
 					headJumpCooldown = headJumpCooldownDuration;
-					
-					Vector3 previousPosition = transform.position;
-					transform.position = GetHeadJumpPosition(jumpedEnemy);
-
-					camScript.Shift(previousPosition - transform.position);
-					camScript.UpdatePositionEarly();
+					teleportFlag = true;
+					teleportPosition = GetHeadJumpPosition(jumpedEnemy);
 				}
 
 				// Everything else or something

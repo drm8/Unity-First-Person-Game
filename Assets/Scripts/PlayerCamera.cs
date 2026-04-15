@@ -1,9 +1,20 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public class PlayerCamera : MonoBehaviour
 {
+	[SerializeField]
+	private float lookLimitV = 70f;
+
+	[SerializeField]
+	private float lookSensitivity = 0.1f;
+
+	private Camera cam;
+
+	private InputAction lookAction;
+
 	[SerializeField]
 	private float dipAccel = 2;
 
@@ -17,7 +28,6 @@ public class PlayerCamera : MonoBehaviour
     private float dipVel = 0;
     private bool dipActive = false;
 
-    
     [SerializeField]
     private float defaultOffsetDuration = 1;
     private List<Offset> offsets = new List<Offset>();
@@ -25,33 +35,55 @@ public class PlayerCamera : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
-    }
+		lookAction = InputSystem.actions.FindAction("Look");
+
+		cam = GetComponentInChildren<Camera>();
+	}
 
     // Update is called once per frame
     void Update() {}
 
     void LateUpdate()
     {
-        // Initial offset
-        DipUpdate();
-        Vector3 currentOffset = Vector3.up * dipY;
+		Rotate();
+		UpdatePosition();
+	}
 
-        // Adding from offsets list
-        for (int i = offsets.Count - 1; i >= 0; i--)
-        {
-            currentOffset += offsets[i].Update();
-            if (offsets[i].IsDone()) offsets.RemoveAt(i);
-        }
+	private void Rotate()
+	{
+		// Camera rotation (up and down)
+		Vector2 lookDirection = lookAction.ReadValue<Vector2>();
+		float currentRotation = cam.transform.rotation.eulerAngles.x;
+		float newX = currentRotation - lookDirection.y * lookSensitivity;
+		if (currentRotation <= 90 && newX > lookLimitV) newX = lookLimitV;
+		if (currentRotation >= 180 && newX < 360 - lookLimitV) newX = 360 - lookLimitV;
 
-        // Applying final offset
-        if (!transform.localPosition.Equals(Vector3.zero) || !currentOffset.Equals(Vector3.zero))
-        {
+		// Camera rotation (left and right)
+		float newY = cam.transform.rotation.eulerAngles.y + lookDirection.x * lookSensitivity;
+		cam.transform.rotation = Quaternion.Euler(new Vector3(newX, newY, 0));
+	}
+
+    private void UpdatePosition()
+    {
+		// Initial offset
+		DipUpdate();
+		Vector3 currentOffset = Vector3.up * dipY;
+
+		// Adding from offsets list
+		for (int i = offsets.Count - 1; i >= 0; i--)
+		{
+			currentOffset += offsets[i].Update();
+			if (offsets[i].IsDone()) offsets.RemoveAt(i);
+		}
+
+		// Applying final offset
+		if (!transform.localPosition.Equals(Vector3.zero) || !currentOffset.Equals(Vector3.zero))
+		{
 			transform.position = transform.parent.position + currentOffset;
 		}
-    }
+	}
 
-    public void UpdatePositionEarly()
+	public void UpdatePositionEarly()
     {
 		// Initial offset
 		DipUpdate();
@@ -65,9 +97,9 @@ public class PlayerCamera : MonoBehaviour
 		}
 
 		// Applying final offset
-		if (!transform.localPosition.Equals(Vector3.zero) || !currentOffset.Equals(Vector3.zero))
+		if (!transform.localPosition.Equals(currentOffset))
 		{
-			transform.position = transform.parent.position + currentOffset;
+			transform.localPosition = currentOffset;
 		}
 	}
 
