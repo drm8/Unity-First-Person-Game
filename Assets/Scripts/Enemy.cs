@@ -15,14 +15,13 @@ public class Enemy : Hitable
 	private float hitFlashDelta = 0;
 
     private Material material;
-	
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
     {
         health = maxHealth;
 
-		playerTransform = FindObjectsByType<PlayerController>(FindObjectsSortMode.InstanceID)[0].transform;
+        playerTransform = FindObjectsByType<PlayerController>(FindObjectsSortMode.InstanceID)[0].transform;
 
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(meshRenderer.material);

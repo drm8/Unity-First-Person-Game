@@ -127,7 +127,6 @@ public class PlayerController : MonoBehaviour
 
 	private Rigidbody rb;
 
-	private AmmoCount ammoUI;
 	private Crosshair crosshairUI;
 
     [SerializeField]
@@ -159,11 +158,9 @@ public class PlayerController : MonoBehaviour
 		cam = GetComponentInChildren<Camera>();
 		rb = GetComponent<Rigidbody>();
 		camScript = GetComponentInChildren<PlayerCamera>();
-		ammoUI = FindObjectsByType<AmmoCount>(FindObjectsSortMode.InstanceID)[0];
 		crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
 
         crosshairUI.SetActive(true);
-        ammoUI.UpdateText(ammo, maxAmmo);
     }
 
 	// Update is called once per frame
@@ -222,7 +219,21 @@ public class PlayerController : MonoBehaviour
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
 
-	private void GroundCheck()
+    private Vector3 GetForward()
+    {
+        Vector3 forward = cam.transform.forward;
+        forward.y = 0;
+        return forward.normalized;
+    }
+
+    private Vector3 GetRight()
+    {
+        Vector3 right = cam.transform.right;
+        right.y = 0;
+        return right.normalized;
+    }
+
+    private void GroundCheck()
 	{
 		if (groundedCooldown > 0)
 		{
@@ -244,19 +255,15 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	private Vector3 GetForward()
+	private Hitable GetHeadJumpEnemy()
 	{
-		Vector3 forward = cam.transform.forward;
-		forward.y = 0;
-		return forward.normalized;
-	}
-
-	private Vector3 GetRight()
-	{
-		Vector3 right = cam.transform.right;
-		right.y = 0;
-		return right.normalized;
-	}
+		if (headJumpCooldown > 0)
+			return null;
+        RaycastHit hit;
+        if (!Physics.SphereCast(transform.position, headJumpScanDistance, -transform.up, out hit, headJumpRadius))
+			return null;
+        return hit.transform.GetComponent<Hitable>();
+    }
 
 	private void Jump()
 	{
@@ -271,43 +278,40 @@ public class PlayerController : MonoBehaviour
 		if (jumpAction.IsPressed())
 		{
 			// Head jump check
-			bool headJump = false;
-			Hitable jumpedEnemy = null;
-			if (headJumpCooldown <= 0)
-			{
-				RaycastHit hit;
-				if (Physics.SphereCast(transform.position, headJumpScanDistance, -transform.up, out hit, headJumpRadius))
-				{
-					jumpedEnemy = hit.transform.GetComponent<Hitable>();
-					if (jumpedEnemy != null) headJump = true;
-				}
-			}
+			Hitable jumpedEnemy = GetHeadJumpEnemy();
+            bool headJump = (jumpedEnemy != null);
 
 			if (jumpBufferTime > 0 && (coyoteTime > 0 || headJump))
 			{
-				// Y velocity
-				if (velocity.y < 0) velocity.y = 0;
+                // Head jump
+                if (headJump)
+                {
+                    if (ammo == 0)
+                    {
+                        shotLoaded = true;
+                        crosshairUI.SetActive(true);
+                    }
+                    ammo = maxAmmo;
+
+                    headJumpCooldown = headJumpCooldownDuration;
+                    teleportFlag = true;
+                    teleportPosition = GetHeadJumpPosition(jumpedEnemy);
+
+					if (!grounded)
+					{
+						previousFallSpeed = Mathf.Abs(velocity.y);
+						timeSinceLanded = 0;
+					}
+
+                }
+
+                // Y velocity
+                if (velocity.y < 0) velocity.y = 0;
 				velocity.y += minJumpStrength;
 
 				// XZ velocity
 				speedBoost += jumpSpeedBoost;
 				if (timeSinceLanded < bounceWindow) speedBoost += Mathf.Max(0, previousFallSpeed-bounceVelocityCut) * bounceSpeedMultiplier;
-
-				// Head jump
-				if (headJump)
-				{
-					if (ammo == 0)
-					{
-						shotLoaded = true;
-						crosshairUI.SetActive(true);
-					}
-					ammo = maxAmmo;
-					ammoUI.UpdateText(ammo, maxAmmo);
-
-					headJumpCooldown = headJumpCooldownDuration;
-					teleportFlag = true;
-					teleportPosition = GetHeadJumpPosition(jumpedEnemy);
-				}
 
 				// Everything else or something
 				jumpTimeRemaining = maxJumpTime;
@@ -389,7 +393,6 @@ public class PlayerController : MonoBehaviour
 			shotLoaded = false;
 			ammo--;
 			crosshairUI.SetActive(false);
-			ammoUI.UpdateText(ammo, maxAmmo);
 
 			RaycastHit hit;
 			bool hasHit;
@@ -419,7 +422,11 @@ public class PlayerController : MonoBehaviour
                     RaycastRecoil(hit);
                     Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 					Instantiate(enemyHitParticles, hit.point, particleRotation);
-					return;
+
+                    // If enemy is in head jump range, replenish ammo.
+					if (GetHeadJumpEnemy() != null) ammo = maxAmmo;
+
+                    return;
 				}
 			}
 
@@ -451,4 +458,9 @@ public class PlayerController : MonoBehaviour
 	{
 		speedBoost += boost;
     }
+
+	public int GetAmmo()
+	{
+		return ammo;
+	}
 }
