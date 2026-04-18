@@ -14,6 +14,8 @@ public class Water : MonoBehaviour
     private float horizVel = 5;
     [SerializeField]
     private float speedBoost = 1;
+    [SerializeField]
+    private float damage = 1;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -27,15 +29,17 @@ public class Water : MonoBehaviour
         if (cooldown > 0) cooldown -= Time.deltaTime;
     }
 
-    private void OnTriggerEnter(Collider collider)
+    private void OnTriggerStay(Collider collider)
     {
         if (cooldown <= 0 && collider.CompareTag("Player"))
         {
+            cooldown = cooldownDuration;
+
             PlayerController playerController = collider.GetComponentInParent<PlayerController>();
+            playerController.Hurt(damage);
             playerController.AddForce(Vector3.up * (Random.Range(yVelMin, yVelMax) - playerController.GetVelocity().y));
             playerController.MoveBySpeed(horizVel);
             playerController.AddSpeedBoost(speedBoost);
-            cooldown = cooldownDuration;
         }
     }
 }

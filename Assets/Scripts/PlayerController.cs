@@ -107,6 +107,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float recoilMaxVelocity = 10;
     [SerializeField]
+    private float recoilMaxEnemyVelocity = 5;
+    [SerializeField]
     private float recoilSpeedBoost = 0.5f;
 
     [SerializeField]
@@ -135,7 +137,6 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
 	private LayerMask defaultOnlyLayermask;
-
     private void Awake()
 	{
 		// Turning v-sync on. I don't feel like making an entire script for this right now.
@@ -424,7 +425,7 @@ public class PlayerController : MonoBehaviour
 				if (hasHit && hit.collider.transform == enemy)
 				{
 					enemy.GetComponentInParent<Hitable>().Hit();
-                    RaycastRecoil(hit);
+                    RaycastRecoil(hit, recoilMaxEnemyVelocity);
                     Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 					Instantiate(enemyHitParticles, hit.point, particleRotation);
 
@@ -439,14 +440,14 @@ public class PlayerController : MonoBehaviour
 			hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
 			if (hasHit)
 			{
-                RaycastRecoil(hit);
+                RaycastRecoil(hit, recoilMaxVelocity);
                 Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 				Instantiate(floorHitParticles, hit.point, particleRotation);
 			}
 		}
 	}
 
-	private void RaycastRecoil(RaycastHit from)
+	private void RaycastRecoil(RaycastHit from, float maxVelocity)
 	{
         Vector3 difference = transform.position - from.point;
 		float mag = difference.magnitude;
@@ -454,7 +455,7 @@ public class PlayerController : MonoBehaviour
 		{
 			if (from.normal.Equals(Vector3.up)) velocity.y = 0;
 			float strength = (recoilDistanceThreshold - mag) / recoilDistanceThreshold;
-			velocity += difference.normalized * (strength * recoilMaxVelocity);
+			velocity += difference.normalized * (strength * maxVelocity);
 			speedBoost += recoilSpeedBoost * Mathf.Sqrt(strength) * (1 - Mathf.Abs(Mathf.Cos(Vector3.Angle(Vector3.up, difference))));
         }
     }
@@ -467,5 +468,15 @@ public class PlayerController : MonoBehaviour
 	public int GetAmmo()
 	{
 		return ammo;
+	}
+
+	public float getHealth()
+	{
+		return health / maxHealth;
+	}
+
+	public void Hurt(float damage)
+	{
+		health -= damage;
 	}
 }
