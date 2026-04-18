@@ -8,6 +8,10 @@ using UnityEngine.UIElements;
 public class PlayerController : MonoBehaviour
 {
 	[SerializeField]
+	private float maxHealth = 10f;
+	private float health;
+
+	[SerializeField]
 	private float moveSpeed = 10f;
 	private bool moving = false;
 
@@ -144,6 +148,7 @@ public class PlayerController : MonoBehaviour
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
 	{
+		health = maxHealth;
 		coyoteTime = coyoteDuration;
 		timeSinceLanded = bounceWindow;
 		jumpBufferTime = jumpBufferDuration;
