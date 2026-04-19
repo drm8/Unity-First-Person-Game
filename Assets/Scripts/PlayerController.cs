@@ -74,7 +74,9 @@ public class PlayerController : MonoBehaviour
 	private float jumpBufferDuration = 0.1f;
 	private float jumpBufferTime;
 
-	[SerializeField]
+    [SerializeField]
+    private float headJumpDamageBase = 1f;
+    [SerializeField]
 	private float headJumpRadius = 0.85f;
 	[SerializeField]
 	private float headJumpScanDistance = 0.5f;
@@ -110,6 +112,11 @@ public class PlayerController : MonoBehaviour
     private float recoilMaxEnemyVelocity = 5;
     [SerializeField]
     private float recoilSpeedBoost = 0.5f;
+
+	[SerializeField]
+	private float shotDamageBase = 1;
+    [SerializeField]
+    private float damageVelocityMultiplier = 0.2f;
 
     [SerializeField]
 	private int maxAmmo = 3;
@@ -303,6 +310,9 @@ public class PlayerController : MonoBehaviour
 						timeSinceLanded = 0;
 					}
 
+                    float sqrXZMagnitude = (velocity.x * velocity.x + velocity.z * velocity.z) * (1 + speedBoost);
+					float headJumpMagnitude = sqrXZMagnitude + GetFallSpeed();
+                    jumpedEnemy.Hit(headJumpDamageBase * (1 + headJumpMagnitude * damageVelocityMultiplier), "jump");
                 }
 
                 // Y velocity
@@ -411,13 +421,11 @@ public class PlayerController : MonoBehaviour
                 hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
 				if (hasHit && hit.collider.transform == enemy)
 				{
-					enemy.GetComponentInParent<Hitable>().Hit();
+					float sqrXZMagnitude = (velocity.x * velocity.x + velocity.z * velocity.z) * (1 + speedBoost);
+                    enemy.GetComponentInParent<Hitable>().Hit(shotDamageBase * (1 + sqrXZMagnitude * damageVelocityMultiplier), "shot");
                     RaycastRecoil(hit, recoilMaxEnemyVelocity);
                     Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
 					Instantiate(enemyHitParticles, hit.point, particleRotation);
-
-                    // If enemy is in head jump range, replenish ammo.
-					if (GetHeadJumpEnemy() != null) ammo = maxAmmo;
 
                     return;
 				}

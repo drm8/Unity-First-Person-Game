@@ -4,6 +4,7 @@ using static UnityEngine.ParticleSystem;
 public class Pancakes : Hitable
 {
     private PlayerController player;
+    protected new float headOffset = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -18,8 +19,9 @@ public class Pancakes : Hitable
         player.SetAmmo(3);
     }
 
-    public override void Hit(float damage = 1)
+    public override void Hit(float damage = 1, string type = "shot")
 	{
-		Object.Destroy(gameObject);
-	}
+        CreateDamageNumber(damage);
+        if (type == "shot") Object.Destroy(gameObject);
+    }
 }

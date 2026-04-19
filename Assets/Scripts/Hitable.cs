@@ -3,15 +3,23 @@ using UnityEngine;
 public class Hitable : MonoBehaviour
 {
 	[SerializeField]
-	private float head_offset = 1;
+	protected float headOffset = 1;
 
 	protected bool jumpable = true;
 
-	public virtual void Hit(float damage = 1) { }
+	[SerializeField] GameObject damageNumber;
+
+	protected void CreateDamageNumber(float damage)
+	{
+        GameObject newNumber = Instantiate(damageNumber, transform.position + Vector3.up * headOffset, Quaternion.identity);
+		newNumber.GetComponent<DamageNumber>().SetNumber(damage);
+	}
+
+    public virtual void Hit(float damage = 1, string type = "shot") { }
 
 	public Vector3 HeadPosition()
 	{
-		return transform.position + Vector3.up * head_offset;
+		return transform.position + Vector3.up * headOffset;
 	}
 
 	public virtual float GetHealth() { return 1; }
