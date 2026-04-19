@@ -36,8 +36,8 @@ public class Water : MonoBehaviour
             cooldown = cooldownDuration;
 
             PlayerController playerController = collider.GetComponentInParent<PlayerController>();
-            playerController.Hurt(damage);
-            playerController.AddForce(Vector3.up * (Random.Range(yVelMin, yVelMax) - playerController.GetVelocity().y));
+            collider.GetComponentInParent<PlayerCombat>().Hurt(damage);
+            playerController.velocity += Vector3.up * (Random.Range(yVelMin, yVelMax) - playerController.velocity.y);
             playerController.MoveBySpeed(horizVel);
             playerController.AddSpeedBoost(speedBoost);
         }

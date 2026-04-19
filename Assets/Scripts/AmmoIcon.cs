@@ -10,7 +10,7 @@ public class AmmoIcon : MonoBehaviour
     [SerializeField] private int countToEnable;
     private bool wasEnabled = true;
 
-    private PlayerController player;
+    private PlayerCombat player;
 
     private float flashEffectDuration = 0.2f;
     private float flashEffectDelta = -1;
@@ -21,7 +21,7 @@ public class AmmoIcon : MonoBehaviour
     void Start()
     {
         image = GetComponent<Image>();
-        player = FindObjectsByType<PlayerController>(FindObjectsSortMode.InstanceID)[0];
+        player = FindObjectsByType<PlayerCombat>(FindObjectsSortMode.InstanceID)[0];
     }
 
     // Update is called once per frame

@@ -1,16 +1,13 @@
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-	[SerializeField]
-	private float maxHealth = 10f;
-	private float health;
-
 	[SerializeField]
 	private float moveSpeed = 10f;
 	private bool moving = false;
@@ -29,22 +26,18 @@ public class PlayerController : MonoBehaviour
 
 	[SerializeField]
 	private float minJumpStrength = 10;
-
 	[SerializeField]
 	private float addtionalJumpStrength = 10;
-
 	[SerializeField]
 	private float maxJumpTime = 0.5f;
 
 	[SerializeField]
 	private float gravity = 10;
-
 	[SerializeField]
 	private float maxFallSpeed = -15;
 
 	[SerializeField]
 	private float groundedRadius = 0.5f;
-
 	[SerializeField]
 	private float groundCheckDistance = 1.1f;
 
@@ -74,8 +67,10 @@ public class PlayerController : MonoBehaviour
 	private float jumpBufferDuration = 0.1f;
 	private float jumpBufferTime;
 
+	[SerializeField]
+	private float headJumpDamageBase = 1f;
     [SerializeField]
-    private float headJumpDamageBase = 1f;
+    private float headJumpDamageVelocityMultiplier = 0.025f;
     [SerializeField]
 	private float headJumpRadius = 0.85f;
 	[SerializeField]
@@ -90,55 +85,22 @@ public class PlayerController : MonoBehaviour
 	private bool teleportFlag = false;
 	private Vector3 teleportPosition;
 
-	private Vector3 velocity = new Vector3(0, 0, 0);
+	// I'm making this public as a little treat to myself, the accessor methods were getting a little excessive.
+	public Vector3 velocity = new Vector3(0, 0, 0);
 
 	private InputAction moveAction;
 	private InputAction jumpAction;
-	private InputAction attackAction;
 
-	[SerializeField]
-	private float shootDistance = 500;
-
-    [SerializeField]
-    private float aimAssistBase = 0.9f;
-    [SerializeField]
-	private float aimAssistPerMeter = 0.05f;
-
-    [SerializeField]
-    private float recoilDistanceThreshold = 5;
-    [SerializeField]
-    private float recoilMaxVelocity = 10;
-    [SerializeField]
-    private float recoilMaxEnemyVelocity = 5;
-    [SerializeField]
-    private float recoilSpeedBoost = 0.5f;
-
-	[SerializeField]
-	private float shotDamageBase = 1;
-    [SerializeField]
-    private float damageVelocityMultiplier = 0.2f;
-
-    [SerializeField]
-	private int maxAmmo = 3;
-	private int ammo;
-
-	[SerializeField]
-	ParticleSystem enemyHitParticles;
-	[SerializeField]
-	ParticleSystem floorHitParticles;
-
-	EnemyManager enemies;
-
+	private PlayerCombat combat;
 	private Camera cam;
-
 	private PlayerCamera camScript;
-
 	private Rigidbody rb;
 
 	private Crosshair crosshairUI;
 
-    [SerializeField]
+	[SerializeField]
 	private LayerMask defaultOnlyLayermask;
+
     private void Awake()
 	{
 		// Turning v-sync on. I don't feel like making an entire script for this right now.
@@ -151,35 +113,25 @@ public class PlayerController : MonoBehaviour
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
 	{
-		health = maxHealth;
 		coyoteTime = coyoteDuration;
 		timeSinceLanded = bounceWindow;
 		jumpBufferTime = jumpBufferDuration;
-		ammo = maxAmmo;
 
-		moveAction = InputSystem.actions.FindAction("Move");
+        moveAction = InputSystem.actions.FindAction("Move");
 		jumpAction = InputSystem.actions.FindAction("Jump");
-		attackAction = InputSystem.actions.FindAction("Attack");
 
-		enemies = FindObjectsByType<EnemyManager>(FindObjectsSortMode.InstanceID)[0];
-
-		cam = GetComponentInChildren<Camera>();
-		rb = GetComponent<Rigidbody>();
+		combat = GetComponent<PlayerCombat>();
+        cam = GetComponentInChildren<Camera>();
 		camScript = GetComponentInChildren<PlayerCamera>();
 		crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
-
-        crosshairUI.SetActive(true);
+        rb = GetComponent<Rigidbody>();
     }
 
 	// Update is called once per frame
 	void Update()
 	{
-		// Movement
-		FlatMotion();
-		Jump();
-
-		// Misc
-		Shoot();
+        MoveBySpeed(moveSpeed * Time.deltaTime);
+        Jump();
 	}
 
 	private void FixedUpdate()
@@ -204,28 +156,21 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
-	public void AddForce(Vector3 force)
-	{
-		velocity += force;
-	}
-
-	public Vector3 GetVelocity()
-	{
-		return velocity;
-	}
-
-	private void FlatMotion()
-	{
-		MoveBySpeed(moveSpeed * Time.deltaTime);
-	}
-
-	public void MoveBySpeed(float speed)
+    public void MoveBySpeed(float speed)
 	{
 		Vector3 moveDirection = moveAction.ReadValue<Vector2>().normalized;
 		moving = !moveDirection.Equals(Vector3.zero);
 		moveDirection = GetForward() * moveDirection.y + GetRight() * moveDirection.x;
 		velocity += new Vector3(moveDirection.x, 0, moveDirection.z) * speed;
 	}
+
+    public void AddSpeedBoost(float boost) { speedBoost += boost; }
+
+	public float GetSpeed()
+	{
+		Vector2 flatVel = new Vector2(velocity.x, velocity.z) * (1 + speedBoost);
+		return flatVel.magnitude;
+    }
 
     private Vector3 GetForward()
     {
@@ -297,8 +242,7 @@ public class PlayerController : MonoBehaviour
                 // Head jump
                 if (headJump)
                 {
-                    if (ammo == 0) crosshairUI.SetActive(true);
-                    ammo = maxAmmo;
+					combat.ReplenishAmmo();
 
                     headJumpCooldown = headJumpCooldownDuration;
                     teleportFlag = true;
@@ -312,7 +256,7 @@ public class PlayerController : MonoBehaviour
 
                     float sqrXZMagnitude = (velocity.x * velocity.x + velocity.z * velocity.z) * (1 + speedBoost);
 					float headJumpMagnitude = sqrXZMagnitude + GetFallSpeed();
-                    jumpedEnemy.Hit(headJumpDamageBase * (1 + headJumpMagnitude * damageVelocityMultiplier), "jump");
+                    jumpedEnemy.Hit(headJumpDamageBase * (1 + headJumpMagnitude * headJumpDamageVelocityMultiplier), "jump");
                 }
 
                 // Y velocity
@@ -388,95 +332,5 @@ public class PlayerController : MonoBehaviour
 		if (headJumpCooldown > 0) headJumpCooldown -= Time.deltaTime;
 		if (groundedCooldown > 0) groundedCooldown -= Time.deltaTime;
 		timeSinceLanded += Time.deltaTime;
-	}
-
-	private void Shoot()
-	{
-		if (ammo > 0 && attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
-		{
-			ammo--;
-			if (ammo == 0) crosshairUI.SetActive(false);
-
-			RaycastHit hit;
-			bool hasHit;
-
-			// Aim assisted hit check
-			Vector3 direction = cam.transform.forward;
-			foreach (Transform enemy in enemies.GetEnemyList())
-			{
-				Vector3 positionDifference = enemy.position - cam.transform.position;
-				float distance = positionDifference.magnitude;
-
-				// Is the enemy close enough?
-				if (distance > shootDistance) continue;
-
-				// Is the angle close enough?
-				Vector3 flattenedDirection = new Vector3(direction.x, direction.y / 2, direction.z);
-				Vector3 flattenedPositionDifference = new Vector3(positionDifference.x, positionDifference.y / 2, positionDifference.z);
-				float angleDisparity = Vector3.Distance(flattenedPositionDifference, Vector3.Project(flattenedPositionDifference, flattenedDirection));
-				if (angleDisparity > aimAssistBase + distance * aimAssistPerMeter) continue;
-				if (Vector3.Angle(positionDifference, direction) > 90) continue;
-
-                // Is there line of sight?
-                hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
-				if (hasHit && hit.collider.transform == enemy)
-				{
-					float sqrXZMagnitude = (velocity.x * velocity.x + velocity.z * velocity.z) * (1 + speedBoost);
-                    enemy.GetComponentInParent<Hitable>().Hit(shotDamageBase * (1 + sqrXZMagnitude * damageVelocityMultiplier), "shot");
-                    RaycastRecoil(hit, recoilMaxEnemyVelocity);
-                    Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
-					Instantiate(enemyHitParticles, hit.point, particleRotation);
-
-                    return;
-				}
-			}
-
-			// Wall hit check
-			hasHit = Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, shootDistance);
-			if (hasHit)
-			{
-                RaycastRecoil(hit, recoilMaxVelocity);
-                Quaternion particleRotation = Quaternion.FromToRotation(Vector3.up, Vector3.Reflect(cam.transform.forward, hit.normal));
-				Instantiate(floorHitParticles, hit.point, particleRotation);
-			}
-		}
-	}
-
-	private void RaycastRecoil(RaycastHit from, float maxVelocity)
-	{
-        Vector3 difference = transform.position - from.point;
-		float mag = difference.magnitude;
-        if (mag < recoilDistanceThreshold && mag > 0)
-		{
-			if (from.normal.Equals(Vector3.up)) velocity.y = 0;
-			float strength = (recoilDistanceThreshold - mag) / recoilDistanceThreshold;
-			velocity += difference.normalized * (strength * maxVelocity);
-			speedBoost += recoilSpeedBoost * Mathf.Sqrt(strength) * (1 - Mathf.Abs(Mathf.Cos(Vector3.Angle(Vector3.up, difference))));
-        }
-    }
-
-	public void AddSpeedBoost(float boost)
-	{
-		speedBoost += boost;
-    }
-
-	public int GetAmmo()
-	{
-		return ammo;
-	}
-
-    public void SetAmmo(int amount)
-    {
-        ammo = amount;
-    }
-
-    public float GetHealth()
-	{
-		return health / maxHealth;
-	}
-
-	public void Hurt(float damage)
-	{
-		health -= damage;
 	}
 }
