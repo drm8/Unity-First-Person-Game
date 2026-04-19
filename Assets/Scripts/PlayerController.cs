@@ -116,11 +116,6 @@ public class PlayerController : MonoBehaviour
 	private int ammo;
 
 	[SerializeField]
-	private float reloadVelocity = 8; // Velocity requirement to reload.
-	[SerializeField]
-	private bool shotLoaded = true;
-
-	[SerializeField]
 	ParticleSystem enemyHitParticles;
 	[SerializeField]
 	ParticleSystem floorHitParticles;
@@ -268,7 +263,10 @@ public class PlayerController : MonoBehaviour
         RaycastHit hit;
         if (!Physics.SphereCast(transform.position, headJumpScanDistance, -transform.up, out hit, headJumpRadius))
 			return null;
-        return hit.transform.GetComponent<Hitable>();
+		Hitable enemy = hit.transform.GetComponent<Hitable>();
+		if (enemy == null || !enemy.GetJumpable())
+			return null;
+        return enemy;
     }
 
 	private void Jump()
@@ -292,11 +290,7 @@ public class PlayerController : MonoBehaviour
                 // Head jump
                 if (headJump)
                 {
-                    if (ammo == 0)
-                    {
-                        shotLoaded = true;
-                        crosshairUI.SetActive(true);
-                    }
+                    if (ammo == 0) crosshairUI.SetActive(true);
                     ammo = maxAmmo;
 
                     headJumpCooldown = headJumpCooldownDuration;
@@ -388,17 +382,10 @@ public class PlayerController : MonoBehaviour
 
 	private void Shoot()
 	{
-		if (!shotLoaded && ammo > 0 && Mathf.Abs(velocity.magnitude*(1+speedBoost)) >= reloadVelocity)
+		if (ammo > 0 && attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
 		{
-			shotLoaded = true;
-			crosshairUI.SetActive(true);
-		}
-
-		if (shotLoaded && ammo > 0 && attackAction.WasPressedThisFrame()) // Has the shoot button been pressed?
-		{
-			shotLoaded = false;
 			ammo--;
-			crosshairUI.SetActive(false);
+			if (ammo == 0) crosshairUI.SetActive(false);
 
 			RaycastHit hit;
 			bool hasHit;
@@ -418,10 +405,10 @@ public class PlayerController : MonoBehaviour
 				Vector3 flattenedPositionDifference = new Vector3(positionDifference.x, positionDifference.y / 2, positionDifference.z);
 				float angleDisparity = Vector3.Distance(flattenedPositionDifference, Vector3.Project(flattenedPositionDifference, flattenedDirection));
 				if (angleDisparity > aimAssistBase + distance * aimAssistPerMeter) continue;
+				if (Vector3.Angle(positionDifference, direction) > 90) continue;
 
-				// Is there line of sight?
-				
-				hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
+                // Is there line of sight?
+                hasHit = Physics.Raycast(cam.transform.position, positionDifference, out hit, distance);
 				if (hasHit && hit.collider.transform == enemy)
 				{
 					enemy.GetComponentInParent<Hitable>().Hit();
@@ -470,7 +457,12 @@ public class PlayerController : MonoBehaviour
 		return ammo;
 	}
 
-	public float getHealth()
+    public void SetAmmo(int amount)
+    {
+        ammo = amount;
+    }
+
+    public float GetHealth()
 	{
 		return health / maxHealth;
 	}

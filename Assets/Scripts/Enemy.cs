@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEngine.ParticleSystem;
 
@@ -50,4 +49,6 @@ public class Enemy : Hitable
 			Object.Destroy(gameObject);
 		}
 	}
+
+    public override float GetHealth() { return health / maxHealth; }
 }
