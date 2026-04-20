@@ -1,13 +1,12 @@
-using NUnit.Framework;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyManager : MonoBehaviour
 {
     private List<Transform> enemyList = new List<Transform>();
+
+    [SerializeField] private string nextLevel;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -30,6 +29,11 @@ public class EnemyManager : MonoBehaviour
     public void RemoveEnemy(Transform enemy)
     {
         enemyList.Remove(enemy);
+
+        if (enemyList.Count == 0)
+        {
+            SceneManager.LoadScene(nextLevel);
+        }
     }
 
 

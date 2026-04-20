@@ -91,8 +91,6 @@ public class PlayerController : MonoBehaviour
 	private PlayerCamera camScript;
 	private Rigidbody rb;
 
-	private Crosshair crosshairUI;
-
 	[SerializeField]
 	private LayerMask defaultOnlyLayermask;
 
@@ -118,7 +116,6 @@ public class PlayerController : MonoBehaviour
 		combat = GetComponent<PlayerCombat>();
         cam = GetComponentInChildren<Camera>();
 		camScript = GetComponentInChildren<PlayerCamera>();
-		crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
         rb = GetComponent<Rigidbody>();
     }
 

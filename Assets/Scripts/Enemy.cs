@@ -6,8 +6,6 @@ public class Enemy : Hitable
     private float maxHealth = 4.9f;
 	private float health;
 
-	private Transform playerTransform;
-
 	[SerializeField]
 	private float hitFlashDuration = 1.0f;
 	private float hitFlashDelta = 0;
@@ -18,8 +16,6 @@ public class Enemy : Hitable
 	void Start()
     {
         health = maxHealth;
-
-        playerTransform = FindObjectsByType<PlayerController>(FindObjectsSortMode.InstanceID)[0].transform;
 
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(meshRenderer.material);
