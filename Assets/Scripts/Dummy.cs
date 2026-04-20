@@ -1,5 +1,5 @@
 using UnityEngine;
-using static UnityEngine.ParticleSystem;
+using UnityEngine.SceneManagement;
 
 public class Dummy : Hitable
 {
@@ -8,6 +8,11 @@ public class Dummy : Hitable
 	private float hitFlashDelta = 0;
 
     private Material material;
+
+    [SerializeField]
+    private bool startsGame = false;
+    [SerializeField]
+    private string firstLevel;
 
     [SerializeField]
     ParticleSystem hitParticles;
@@ -34,8 +39,16 @@ public class Dummy : Hitable
 
 	public override void Hit(float damage = 1, string type = "shot")
 	{
-        hitFlashDelta = hitFlashDuration;
-        Instantiate(hitParticles, transform);
-        CreateDamageNumber(damage);
+        if (startsGame && type == "shot")
+        {
+            SceneManager.LoadScene(firstLevel);
+        }
+
+        else
+        {
+            hitFlashDelta = hitFlashDuration;
+            Instantiate(hitParticles, transform);
+            CreateDamageNumber(damage);
+        }
     }
 }

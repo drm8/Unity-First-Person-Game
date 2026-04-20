@@ -1,6 +1,5 @@
-using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerCamera : MonoBehaviour
@@ -38,7 +37,21 @@ public class PlayerCamera : MonoBehaviour
 		lookAction = InputSystem.actions.FindAction("Look");
 
 		cam = GetComponentInChildren<Camera>();
-	}
+
+		lookSensitivity = PlayerPrefs.GetFloat("lookSensitivity", lookSensitivity);
+		PlayerPrefs.SetFloat("lookSensitivity", lookSensitivity);
+		PlayerPrefs.Save();
+    }
+
+	public void UpdateSensitivity(float sensitivity)
+	{
+		lookSensitivity = sensitivity;
+        PlayerPrefs.SetFloat("lookSensitivity", sensitivity);
+        PlayerPrefs.Save();
+    }
+
+    public void OnPause() { lookAction.Disable(); }
+    public void OnUnpause() { lookAction.Enable(); }
 
     // Update is called once per frame
     void Update() {}

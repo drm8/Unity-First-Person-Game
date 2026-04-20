@@ -1,10 +1,5 @@
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
-using UnityEditor;
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -127,8 +122,23 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-	// Update is called once per frame
-	void Update()
+    public void OnPause()
+	{
+        moveAction.Disable();
+        jumpAction.Disable();
+		combat.OnPause();
+        camScript.OnPause();
+    }
+    public void OnUnpause() 
+	{
+        moveAction.Enable();
+        jumpAction.Enable();
+        combat.OnUnpause();
+        camScript.OnUnpause();
+    }
+
+    // Update is called once per frame
+    void Update()
 	{
         MoveBySpeed(moveSpeed * Time.deltaTime);
         Jump();
@@ -166,7 +176,13 @@ public class PlayerController : MonoBehaviour
 
     public void AddSpeedBoost(float boost) { speedBoost += boost; }
 
-	public float GetSpeed()
+    public float GetFallSpeed()
+    {
+        if (grounded && timeSinceLanded < bounceWindow) return -previousFallSpeed;
+        else return velocity.y;
+    }
+
+    public float GetSpeed()
 	{
 		Vector2 flatVel = new Vector2(velocity.x, velocity.z) * (1 + speedBoost);
 		return flatVel.magnitude;
@@ -302,12 +318,6 @@ public class PlayerController : MonoBehaviour
             // backwards, which feels bad. Instead, project onto the player's velocity with the usual place as an origin.
             return Vector3.Project(transform.position - center, velocity) + center;
         }
-	}
-
-	public float GetFallSpeed()
-	{
-		if (grounded && timeSinceLanded < bounceWindow) return -previousFallSpeed;
-		else return velocity.y;
 	}
 
 	private void MovementWrapup()

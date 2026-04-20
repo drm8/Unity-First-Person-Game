@@ -343,7 +343,7 @@ MonoBehaviour:
   bounceVelocityCut: 11
   bounceSpeedMultiplier: 0.1
   jumpBufferDuration: 0.15
-  headJumpDamageBase: 1
+  headJumpDamageBase: 0.2
   headJumpDamageVelocityMultiplier: 0.025
   headJumpRadius: 0.85
   headJumpScanDistance: 0.5

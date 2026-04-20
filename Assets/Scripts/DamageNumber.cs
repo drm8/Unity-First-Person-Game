@@ -52,8 +52,10 @@ public class DamageNumber : MonoBehaviour
         {
             GameObject.Destroy(gameObject);
         }
-
-        transform.localScale = Vector3.one * size * Mathf.Sqrt(timeLeft / duration);
-        transform.position += Velocity * Mathf.Sqrt(timeLeft / duration) * Time.deltaTime;
+        else
+        {
+            transform.localScale = Vector3.one * size * Mathf.Sqrt(timeLeft / duration);
+            transform.position += Velocity * Mathf.Sqrt(timeLeft / duration) * Time.deltaTime;
+        }
     }
 }

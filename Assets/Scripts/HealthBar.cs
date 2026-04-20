@@ -6,7 +6,7 @@ public abstract class HealthBar : MonoBehaviour
 {
     [SerializeField] private float fillWidth = 360;
 
-    private float previousHealth = 1;
+    protected float previousHealth = 1;
     private float targetHealth = 1;
     private float healthLerp = -1;
     [SerializeField] float healthLerpSpeed = 7;
@@ -26,7 +26,7 @@ public abstract class HealthBar : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    protected void Update()
     {
         float health = GetHealth();
         if (health != targetHealth)

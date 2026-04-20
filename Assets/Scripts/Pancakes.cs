@@ -1,14 +1,13 @@
 using UnityEngine;
-using static UnityEngine.ParticleSystem;
 
 public class Pancakes : Hitable
 {
     private PlayerCombat player;
-    protected new float headOffset = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        headOffset = 0;
         player = FindObjectsByType<PlayerCombat>(FindObjectsSortMode.InstanceID)[0];
         jumpable = false;
     }

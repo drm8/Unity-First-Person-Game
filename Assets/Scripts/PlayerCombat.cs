@@ -1,13 +1,14 @@
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
+using UnityEngine.SceneManagement;
 
 public class PlayerCombat : MonoBehaviour
 {
     [SerializeField]
     private float maxHealth = 10f;
     private float health;
+
+    private string respawnScene = "Menu";
 
     private InputAction attackAction;
 
@@ -64,6 +65,9 @@ public class PlayerCombat : MonoBehaviour
         crosshairUI = FindObjectsByType<Crosshair>(FindObjectsSortMode.InstanceID)[0];
         crosshairUI.SetActive(true);
     }
+
+    public void OnPause() { attackAction.Disable(); }
+    public void OnUnpause() { attackAction.Enable(); }
 
     // Update is called once per frame
     void Update()
@@ -153,5 +157,9 @@ public class PlayerCombat : MonoBehaviour
     public void ReplenishAmmo() { SetAmmo(maxAmmo); }
 
     public float GetHealth() { return health / maxHealth; }
-    public void Hurt(float damage) { health -= damage; }
+    public void Hurt(float damage) 
+    { 
+        health -= damage; 
+        if (health <= 0) SceneManager.LoadScene(respawnScene);
+    }
 }
